@@ -1,11 +1,12 @@
 package game2048;
 
+import java.awt.*;
 import java.util.Formatter;
 import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author Frank
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -109,16 +110,62 @@ public class Model extends Observable {
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-
-        // TODO: Modify this.board (and perhaps this.score) to account
+        if(side != Side.NORTH){
+            board.setViewingPerspective(side);//设置视角
+            }
+        // TODO: Modify this.board  (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        int[][] mergeFlag = new int[board.size()][board.size()];//用来判断这个tilt是否merge过了，merge过即为1，没有则为0
+        for(int i = board.size() - 1; i >= 0; i -= 1){
+            for(int j = board.size() - 2; j >= 0; j -= 1){
+                if(board.tile(i, j) != null){
+                    int position = upToWhereWithMerge(board,i,j, mergeFlag);
+                    if(position == upToWhereWithoutMerge(board, i, j, mergeFlag)){//没有发生merge
+                        Tile t = board.tile(i, j);
+                        board.move(i, position, t);
+                        changed = true;
+                        score += 0;
+                    }
+                    else{//merge的一个区别是加分了
+                        Tile t = board.tile(i, j);
+                        //System.out.println(t.value());
+                        score += t.value() * 2 ;
+                        board.move(i, position, t);
+                        mergeFlag[i][position] = 1;
+                        changed = true;
+                    }
 
+                }
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);//重置
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+    public int upToWhereWithoutMerge(Board b, int colum, int row, int[][] mergeFlag){
+        for(int i = 1; row + i < b.size(); i += 1){
+            if(b.tile(colum, row + i ) != null)     return row + i - 1;
+        }
+        return b.size() - 1;
+    }
+
+    public int upToWhereWithMerge(Board b, int colum, int row, int[][] mergeFlag){
+        for(int i = 1; row + i < b.size(); i += 1){
+            if(b.tile(colum, row + i) == null)  continue;
+            else {
+                //如果上面这个tilt没有merge过，并且值相等，那么可以merge
+                if (mergeFlag[colum][row + i] == 0 && b.tile(colum, row + i).value() == b.tile(colum, row).value()) {
+                    return row + i;
+                } else {
+                    return row + i - 1;
+                }
+            }
+        }
+        return b.size() - 1;
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -137,7 +184,14 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        // : Fill in this function.
+        for(int i = 0; i <= 3;i += 1){
+            for(int j = 0; j <= 3; j += 1){
+                if(b.tile(i,j) == null){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -147,7 +201,15 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        // : Fill in this function.
+        for(int i = 0; i <= 3;i += 1){
+            for(int j = 0; j <= 3; j += 1){
+                //System.out.println(b.tile(i,j).value());
+                if(b.tile(i,j) != null && b.tile(i,j).value()  == MAX_PIECE){//服了，没想到这点，断路器还是很好用的
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -158,7 +220,24 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        // : Fill in this function.
+        if (emptySpaceExists(b) || isAdjacentTileEqual(b)) {
+            return true;
+        }
+        return false;
+    }
+//自己的辅助函数hhh
+    public static boolean isAdjacentTileEqual(Board b){
+        for(int i = 0; i <= 3;i += 1){
+            for(int j = 0; j <= 3; j += 1){
+                if(b.tile(i, j) != null){
+                    if(j + 1 <= 3 && b.tile(i, j + 1) != null && b.tile(i, j).value() == b.tile(i, j + 1).value())      return true;
+                    if(j - 1 >= 0 && b.tile(i, j - 1) != null && b.tile(i, j).value() == b.tile(i, j - 1).value())      return true;
+                    if(i + 1 <= 3 && b.tile(i + 1, j) != null && b.tile(i, j).value() == b.tile(i + 1, j).value())      return true;
+                    if(i - 1 >= 0 && b.tile(i - 1, j) != null && b.tile(i, j).value() == b.tile(i - 1, j).value())      return true;
+                }
+            }
+        }
         return false;
     }
 

@@ -34,17 +34,18 @@ class GUISource implements InputSource {
     /** Return and log which direction arrow was pressed. */
     public String getKey() {
         String command = _source.readKey();
+        //System.out.println(command);可以发现"↑"对应的是向上箭头
         switch (command) {
-            case "↑" :
+            case "W" :
                 command = "Up";
                 break;
-            case "→" :
+            case "D" :
                 command = "Right";
                 break;
-            case "↓" :
+            case "S" :
                 command = "Down";
                 break;
-            case "←" :
+            case "A" :
                 command = "Left";
                 break;
             default :
