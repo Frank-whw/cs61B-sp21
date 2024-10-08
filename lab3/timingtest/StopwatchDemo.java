@@ -20,7 +20,7 @@ public class StopwatchDemo {
     public static void main(String[] args) {
         Stopwatch sw = new Stopwatch();
         int fib41 = fib(41);
-        double timeInSeconds = sw.elapsedTime();
+        double timeInSeconds = sw.elapsedTime();//it seems I can use it to get the gap from the time sw was created to this code
         System.out.println("The 50th fibonacci number is " + fib41);
         System.out.println("Time taken to compute 41st fibonacci number: " + timeInSeconds + " seconds.");
     }
