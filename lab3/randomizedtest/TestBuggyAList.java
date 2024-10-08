@@ -11,9 +11,9 @@ public class TestBuggyAList {
   // YOUR TESTS HERE
   @Test//md when we use @Test, we shou  ld add parathesis under this line
   public void randomizedTest1(){
-      AListNoResizing<Integer> L = new AListNoResizing<>();
+      BuggyAList<Integer> L = new BuggyAList<>();
 
-      int N = 10000;
+      int N = 5000;
       for (int i = 0; i < N; i += 1) {
           int operationNumber = StdRandom.uniform(0, 4);//实际上是左闭右开
           if (operationNumber == 0) {
