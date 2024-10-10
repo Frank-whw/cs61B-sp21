@@ -1,6 +1,6 @@
 package deque;
 import edu.princeton.cs.algs4.ST;
-import net.sf.saxon.functions.ConstantFunction;
+//import net.sf.saxon.functions.ConstantFunction;
 
 import java.util.Deque;
 public class ArrayDeque<T>{

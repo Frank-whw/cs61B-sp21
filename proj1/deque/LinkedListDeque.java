@@ -1,7 +1,7 @@
 package deque;
 
 import edu.princeton.cs.algs4.ST;
-import net.sf.saxon.functions.ConstantFunction;
+//import net.sf.saxon.functions.ConstantFunction;
 
 import java.util.Deque;
 
@@ -30,6 +30,7 @@ public class LinkedListDeque<T> {
         StuffNode currentNode = new StuffNode(sentinelFirst, i, sentinelBack);
         sentinelFirst.next = currentNode;
         sentinelBack.prev = currentNode;
+        size = 1;
     }
     public LinkedListDeque(){
         sentinelFirst = new StuffNode(null, null, null);

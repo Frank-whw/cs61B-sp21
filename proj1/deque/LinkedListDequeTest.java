@@ -135,4 +135,40 @@ public class LinkedListDequeTest {
         }
 
     }
+    @Test
+    public void nonEmptyInstantiationTest() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>(1);
+
+        assertFalse("Should not be empty", lld1.isEmpty());
+        assertEquals("Should have size 1", 1, lld1.size());
+    }
+
+    @Test
+    public void getTest() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+
+        for (int i = 0; i < 1000; i++) {
+            lld1.addLast(i);
+        }
+
+        for (int i = 0; i < 1000; i++) {
+            assertEquals("Should have same value", i, (int) lld1.get(i));
+        }
+
+        assertNull("Should be null when index out of bound", lld1.get(1000));
+    }
+
+    @Test
+    public void getRecursiveTest() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+
+        for (int i = 0; i < 1000; i++) {
+            lld1.addLast(i);
+        }
+
+        for (int i = 0; i < 1000; i++) {
+            assertEquals("Should have same value", i, (int) lld1.getRecursive(i));
+        }
+    }
+
 }
