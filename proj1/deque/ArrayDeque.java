@@ -4,51 +4,101 @@ import net.sf.saxon.functions.ConstantFunction;
 
 import java.util.Deque;
 public class ArrayDeque<T>{
-    T[] items;
-    int size;
+    private T[] items = (T[]) new Object[8];
+    private int size;
+    private int nextFirst;
+    private int nextLast;
     //creat an empty ArrayDeque
     public ArrayDeque(){
-        items =(T[]) new Object[8];
         size = 0;
+        nextFirst=4;
+        nextLast = 5;
     }
-    /*
-    public ArrayDeque(int x){
-        items = new int[8];
-        items[0] = x;
+
+    public ArrayDeque(T x){
+        items[4] = x;
+        nextFirst = 3;
+        nextLast = 5;
         size = 1;
     }
-    */
-    public void addLast(T x){
+
+    public boolean isEmpty(){
+        return size == 0;
+    }
+
+    public void addFirst(T x){
         if(size == items.length){
             resize(size * 2);
         }
-        items[size] = x;
+        items[nextFirst] = x;
+        size ++;
+        nextFirst = (nextFirst - 1 + items.length) % items.length;;
+
+    }
+    public void addLast(T x){
+        //make sure that the length is enough
+        if(size == items.length){
+            resize(size * 2);
+        }
+        items[nextLast] = x;
+        nextLast = (nextLast + 1) % items.length;
         size ++;
     }
 
     public T getLast(){
-        return items[size - 1];
+        return items[nextLast - 1];
+    }
+    public T get(int i) {
+        if (i < 0 || i >= size) {  // 使用 && 来确保索引合法
+            return null;
+        }
+        return items[(nextFirst + 1 + i) % items.length];  // 环绕索引
     }
 
-    public T get(int i){
-        return items[i];
-    }
     public int size(){
         return size;
     }
+    public T removeFirst(){
+       if(isEmpty())    return null;
+       nextFirst = (nextFirst + 1) % items.length;
+       T removedItem = items[nextFirst];
+       items[nextFirst] = null;
+       size -= 1;
+       shrinkSize();
+       return removedItem;
+    }
     public T removeLast(){
-        T removedItem = getLast();
-        items[size - 1] = null;
+        if(isEmpty())   return null;
+        nextLast = (nextLast - 1 + items.length) % items.length;
+        T removedItem = items[nextLast];
+        items[nextLast] = null;
         size --;
+        shrinkSize();
         return removedItem;
     }
-    private void resize(int capacity){
-        if(capacity >= 16){
-            if(size < capacity / 4){
-                capacity = capacity / 4;
-            }
+    private void shrinkSize(){
+        if(isEmpty()){
+            resize(8);
+        }else if (items.length / 4 > size && size >= 4) {
+            resize(items.length / 2);
         }
-        int[] a = new int[capacity];
-        System.arraycopy(items, 0 , a, 0, size);
+
     }
+    private void resize(int capacity) {
+        T[] a = (T[]) new Object[capacity];
+        for(int i = 0; i < size; i++){
+            a[i] = get(i);
+        }
+        nextFirst = capacity - 1;
+        nextLast = size;
+        items = a;
+    }
+    public void printDeque(){
+        for(int i = 0; i < size; i ++){
+            System.out.print(get(i));
+            if(i != size - 1)   System.out.print(" ");
+            else    System.out.println();
+        }
+    }
+
 }

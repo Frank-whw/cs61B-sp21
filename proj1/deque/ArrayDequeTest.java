@@ -8,33 +8,29 @@ public class ArrayDequeTest {
     // YOUR TESTS HERE
     @Test//md when we use @Test, we shou  ld add parathesis under this line
     public void randomizedTest1(){
-        ArrayDeque<Integer> L = new ArrayDeque<>();
-        int N = 8;
+        ArrayDeque<Integer> arrayDeque = new ArrayDeque<>();
+        int N = 1000;
         for (int i = 0; i < N; i += 1) {
-            int operationNumber = StdRandom.uniform(0, 4);//实际上是左闭右开
+            int operationNumber = StdRandom.uniform(0, 6);
             if (operationNumber == 0) {
-                // addLast
                 int randVal = StdRandom.uniform(0, 100);
-                L.addLast(randVal);
-                System.out.println("addLast(" + randVal + ")");
+                arrayDeque.addFirst(randVal);
             } else if (operationNumber == 1) {
-                // size
-                int size = L.size();
-                System.out.println("size: " + size);
+                int randVal = StdRandom.uniform(0, 100);
+                arrayDeque.addLast(randVal);
+            } else if (arrayDeque.size() == 0) {
+                assertTrue(arrayDeque.isEmpty());
+            } else if (operationNumber == 2) {
+                assertTrue(arrayDeque.size() > 0);
+            } else if (operationNumber == 3) {
+                arrayDeque.removeFirst();
+            } else if (operationNumber == 4) {
+                arrayDeque.removeLast();
+            } else if (operationNumber == 5) {
+                int randIndex = StdRandom.uniform(0, arrayDeque.size());
+                arrayDeque.get(randIndex);
             }
-            else if (operationNumber == 2){
-                //getLast if the size is great than 0
-                if(L.size() > 0) {
-                    int getNum = L.getLast();
-                    System.out.println("getLast(" + getNum + ")");
-                }
-            }
-            else{
-                if(L.size() > 0) {
-                    int removedNum = L.removeLast();
-                    System.out.println("removeLast(" + removedNum + ")");
-                }
-            }
+
         }
     }
 }
