@@ -2,8 +2,7 @@ package deque;
 import edu.princeton.cs.algs4.ST;
 //import net.sf.saxon.functions.ConstantFunction;
 
-import java.util.Deque;
-public class ArrayDeque<T>{
+public class ArrayDeque<T> implements Deque<T> {
     private T[] items = (T[]) new Object[8];
     private int size;
     private int nextFirst;

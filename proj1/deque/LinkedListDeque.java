@@ -1,11 +1,15 @@
 package deque;
 
+/*import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Objects;*/
 import edu.princeton.cs.algs4.ST;
 //import net.sf.saxon.functions.ConstantFunction;
 
-import java.util.Deque;
+//import java.util.Deque;
 
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Deque<T>{
+    //@SuppressWarnings("unchecked")
     private StuffNode sentinelFirst;
     private StuffNode sentinelBack;
     private int size;
@@ -39,6 +43,7 @@ public class LinkedListDeque<T> {
         sentinelFirst.next = sentinelBack;
         size = 0;
     }
+
     public void addFirst(T item){
         StuffNode OldFirstNode = sentinelFirst.next;
         StuffNode currentNode = new StuffNode(sentinelFirst, item, OldFirstNode);//这个时候sentinelFirst.next 应该还是指向原来的第一个Node
@@ -54,9 +59,9 @@ public class LinkedListDeque<T> {
         sentinelBack.prev = currentNode;
         size ++;
     }
-    public boolean isEmpty(){
-        return size == 0;
-    }
+//    public boolean isEmpty(){
+//        return size == 0;
+//    }
     public int size(){
         return size;
     }
