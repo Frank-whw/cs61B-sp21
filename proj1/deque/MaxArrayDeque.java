@@ -48,7 +48,7 @@ public class MaxArrayDeque<T> {
             }
         }
     }
-    public T removeFirst(){
+    public T removeFirst() {
         nextFirst = (nextFirst + 1) % items.length;
         T removedItem = items[nextFirst];
         items[nextFirst] = null;
@@ -68,19 +68,19 @@ public class MaxArrayDeque<T> {
         if (index < 0 || index >= size) {
             return  null;
         }
-        int numberIndex = (nextFirst + 1 +index) % items.length;
+        int numberIndex = (nextFirst + 1 + index) % items.length;
         return items[numberIndex];
     }
-    public void shrinkSize(){
+    public void shrinkSize() {
         if (items.length / 4 > size && size >= 4) {
             resize(items.length / 4);
-        } else if(isEmpty()) {
+        } else if (isEmpty()) {
             resize(8);
         }
     }
     public void resize(int capacity) {
         T[] newItems = (T[]) new Object[capacity];
-        for (int i =0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             newItems[i] = get(i);
         }
         nextFirst = capacity - 1;
@@ -91,13 +91,13 @@ public class MaxArrayDeque<T> {
         if (isEmpty()) {
             return null;
         }
-        int MaxIndex = 0;
+        int maxIndex = 0;
         for (int i = 1; i < size; i++) {
-            if (comparator.compare(get(i), get(MaxIndex)) > 0) {
-                MaxIndex = i;
+            if (comparator.compare(get(i), get(maxIndex)) > 0) {
+                maxIndex = i;
             }
         }
-        return get(MaxIndex);
+        return get(maxIndex);
     }
     public T max() {
         return max(comparator);

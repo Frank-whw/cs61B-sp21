@@ -44,7 +44,7 @@ public class ArrayDeque<T> implements Deque<T> {
         size++;
     }
 
-    public T getLast(){
+    public T getLast() {
         return items[nextLast - 1];
     }
     public T get(int i) {
@@ -58,15 +58,15 @@ public class ArrayDeque<T> implements Deque<T> {
         return size;
     }
     public T removeFirst() {
-       if (isEmpty()) {
+        if (isEmpty()) {
            return null;
-       }
-       nextFirst = (nextFirst + 1) % items.length;
-       T removedItem = items[nextFirst];
-       items[nextFirst] = null;
-       size -= 1;
-       shrinkSize();
-       return removedItem;
+        }
+        nextFirst = (nextFirst + 1) % items.length;
+        T removedItem = items[nextFirst];
+        items[nextFirst] = null;
+        size -= 1;
+        shrinkSize();
+        return removedItem;
     }
     public T removeLast() {
         if (isEmpty()) {
@@ -75,21 +75,21 @@ public class ArrayDeque<T> implements Deque<T> {
         nextLast = (nextLast - 1 + items.length) % items.length;
         T removedItem = items[nextLast];
         items[nextLast] = null;
-        size --;
+        size--;
         shrinkSize();
         return removedItem;
     }
     private void shrinkSize() {
         if (isEmpty()) {
             resize(8);
-        }else if (items.length / 4 > size && size >= 4) {
+        } else if (items.length / 4 > size && size >= 4) {
             resize(items.length / 2);
         }
 
     }
     private void resize(int capacity) {
         T[] a = (T[]) new Object[capacity];
-        for(int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             a[i] = get(i);
         }
         nextFirst = capacity - 1;
@@ -97,7 +97,7 @@ public class ArrayDeque<T> implements Deque<T> {
         items = a;
     }
     public void printDeque() {
-        for(int i = 0; i < size; i ++){
+        for (int i = 0; i < size; i++) {
             System.out.print(get(i));
             if (i != size - 1) {
                 System.out.print(" ");
