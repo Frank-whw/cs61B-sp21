@@ -49,6 +49,9 @@ public class MaxArrayDeque<T> {
         }
     }
     public T removeFirst() {
+        if (size == 0) {
+            return null;
+        }
         nextFirst = (nextFirst + 1) % items.length;
         T removedItem = items[nextFirst];
         items[nextFirst] = null;
@@ -57,6 +60,9 @@ public class MaxArrayDeque<T> {
         return removedItem;
     }
     public T removeLast() {
+        if (size == 0) {
+            return null;
+        }
         nextLast = (nextLast - 1 + items.length) % items.length;
         T removeItem = items[nextLast];
         items[nextLast] = null;
@@ -93,7 +99,7 @@ public class MaxArrayDeque<T> {
         }
         int maxIndex = 0;
         for (int i = 1; i < size; i++) {
-            if (comparator.compare(get(i), get(maxIndex)) > 0) {
+            if (c.compare(get(i), get(maxIndex)) > 0) {
                 maxIndex = i;
             }
         }

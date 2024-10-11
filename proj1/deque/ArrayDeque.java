@@ -59,7 +59,7 @@ public class ArrayDeque<T> implements Deque<T> {
     }
     public T removeFirst() {
         if (isEmpty()) {
-           return null;
+            return null;
         }
         nextFirst = (nextFirst + 1) % items.length;
         T removedItem = items[nextFirst];
