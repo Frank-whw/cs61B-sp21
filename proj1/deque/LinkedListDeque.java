@@ -166,11 +166,10 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         if (this == o) {
             return true;
         } //means they are actually the same thing
-
-        if (!(o instanceof LinkedListDeque)) {
+        if (!(o instanceof Deque)) {
             return false;
         }
-        LinkedListDeque<?> ad = (LinkedListDeque<?>) o;
+        Deque<?> ad = (Deque<?>) o;
         if (ad.size() != size) {
             return false;
         }

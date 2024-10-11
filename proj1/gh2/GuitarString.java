@@ -2,7 +2,7 @@ package gh2;
 
 import deque.Deque;
 import deque.LinkedListDeque;
-import edu.princeton.cs.algs4.StdRandom;
+//import edu.princeton.cs.algs4.StdRandom;
 //Note: This file will not compile until you complete the Deque implementations
 public class GuitarString {
     /** Constants. Do not change. In case you're curious, the keyword final
@@ -19,7 +19,7 @@ public class GuitarString {
 
         int capacity = (int) Math.round(SR / frequency);
         buffer = new LinkedListDeque<>();
-        for(int i = 0; i < capacity; i++) {
+        for (int i = 0; i < capacity; i++) {
             buffer.addLast(0.0);
         }
     }
@@ -32,7 +32,7 @@ public class GuitarString {
         //       other. This does not mean that you need to check that the numbers
         //       are different from each other. It means you should repeatedly call
         //       Math.random() - 0.5 to generate new random numbers for each array index.
-        for(int i = 0; i < buffer.size(); i++) {
+        for (int i = 0; i < buffer.size(); i++) {
             buffer.removeFirst();
             double r = Math.random() - 0.5;
             buffer.addLast(r);
