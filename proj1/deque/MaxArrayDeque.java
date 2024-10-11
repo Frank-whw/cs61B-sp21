@@ -1,5 +1,5 @@
 package deque;
-import net.sf.saxon.functions.Minimax;
+//import net.sf.saxon.functions.Minimax;
 
 import java.util.Comparator;
 
@@ -10,41 +10,40 @@ public class MaxArrayDeque<T> {
     private int nextFirst;
     private int nextLast;
     private Comparator<T> comparator;
-    public MaxArrayDeque(Comparator<T> c){
+    public MaxArrayDeque(Comparator<T> c) {
         nextFirst = 4;
         nextLast = 5;
         comparator = c;
     }
 
-    public void addFirst(T item){
-        if(size == items.length){
+    public void addFirst(T item) {
+        if (size == items.length) {
             resize(size * 2);
         }
         items[nextFirst] = item;
         nextFirst = (nextFirst - 1 + items.length) % items.length;
         size += 1;
     }
-    public void addLast(T item){
-        if(size == items.length){
+    public void addLast(T item) {
+        if (size == items.length) {
             resize(size * 2);
         }
         items[nextLast] = item;
         nextLast = (nextLast + 1 + items.length) % items.length;
         size += 1;
     }
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return size == 0;
     }
-    public int size(){
+    public int size() {
         return size;
     }
-    public void printDeque(){
-        for(int i = 0; i < size; i ++){
+    public void printDeque() {
+        for (int i = 0; i < size; i++) {
             System.out.print(get(i));
-            if(i != size - 1){
+            if (i != size - 1) {
                 System.out.print(" ");
-            }
-            else{
+            } else {
                 System.out.println();
             }
         }
@@ -57,7 +56,7 @@ public class MaxArrayDeque<T> {
         shrinkSize();
         return removedItem;
     }
-    public T removeLast(){
+    public T removeLast() {
         nextLast = (nextLast - 1 + items.length) % items.length;
         T removeItem = items[nextLast];
         items[nextLast] = null;
@@ -65,43 +64,42 @@ public class MaxArrayDeque<T> {
         shrinkSize();
         return removeItem;
     }
-    public T get(int index){
-        if(index < 0 || index >= size){
+    public T get(int index) {
+        if (index < 0 || index >= size) {
             return  null;
         }
         int numberIndex = (nextFirst + 1 +index) % items.length;
         return items[numberIndex];
     }
     public void shrinkSize(){
-        if(items.length / 4 > size && size >= 4){
+        if (items.length / 4 > size && size >= 4) {
             resize(items.length / 4);
-        }
-        else if(isEmpty()){
+        } else if(isEmpty()) {
             resize(8);
         }
     }
-    public void resize(int capacity){
+    public void resize(int capacity) {
         T[] newItems = (T[]) new Object[capacity];
-        for(int i =0; i < size; i ++){
+        for (int i =0; i < size; i++) {
             newItems[i] = get(i);
         }
         nextFirst = capacity - 1;
         nextLast = size;
         items = newItems;
     }
-    public T max(Comparator<T> c){
-        if(isEmpty()){
+    public T max(Comparator<T> c) {
+        if (isEmpty()) {
             return null;
         }
         int MaxIndex = 0;
-        for(int i = 1; i < size; i ++){
-            if(comparator.compare(get(i), get(MaxIndex)) > 0){
+        for (int i = 1; i < size; i++) {
+            if (comparator.compare(get(i), get(MaxIndex)) > 0) {
                 MaxIndex = i;
             }
         }
         return get(MaxIndex);
     }
-    public T max(){
+    public T max() {
         return max(comparator);
     }
 }

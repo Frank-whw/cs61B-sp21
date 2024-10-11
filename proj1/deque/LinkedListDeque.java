@@ -3,24 +3,24 @@ package deque;
 /*import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;*/
-import edu.princeton.cs.algs4.ST;
+//import edu.princeton.cs.algs4.ST;
 //import net.sf.saxon.functions.ConstantFunction;
 
 //import java.util.Deque;
 
-public class LinkedListDeque<T> implements Deque<T>{
+public class LinkedListDeque<T> implements Deque<T> {
     //@SuppressWarnings("unchecked")
     private StuffNode sentinelFirst;
     private StuffNode sentinelBack;
     private int size;
 
     //定义每个节点
-    private class StuffNode{
-        public StuffNode prev;
-        public T item;
-        public StuffNode next;
+    private class StuffNode {
+        private StuffNode prev;
+        private T item;
+        private StuffNode next;
 
-        public StuffNode(StuffNode n, T i, StuffNode m){
+        public StuffNode(StuffNode n, T i, StuffNode m) {
             prev = n;
             item = i;
             next = m;
@@ -28,7 +28,7 @@ public class LinkedListDeque<T> implements Deque<T>{
     }
 
     //creat A LinkedListDeque
-    public LinkedListDeque(T i){
+    public LinkedListDeque(T i) {
         sentinelFirst = new StuffNode(null, null, null);
         sentinelBack = new StuffNode(null, null, null);
         StuffNode currentNode = new StuffNode(sentinelFirst, i, sentinelBack);
@@ -36,7 +36,7 @@ public class LinkedListDeque<T> implements Deque<T>{
         sentinelBack.prev = currentNode;
         size = 1;
     }
-    public LinkedListDeque(){
+    public LinkedListDeque() {
         sentinelFirst = new StuffNode(null, null, null);
         sentinelBack  = new StuffNode(null, null, null);
         sentinelBack.prev = sentinelFirst;
@@ -44,15 +44,16 @@ public class LinkedListDeque<T> implements Deque<T>{
         size = 0;
     }
 
-    public void addFirst(T item){
+    public void addFirst(T item) {
         StuffNode OldFirstNode = sentinelFirst.next;
-        StuffNode currentNode = new StuffNode(sentinelFirst, item, OldFirstNode);//这个时候sentinelFirst.next 应该还是指向原来的第一个Node
+        StuffNode currentNode = new StuffNode(sentinelFirst, item, OldFirstNode);
+        //这个时候sentinelFirst.next 应该还是指向原来的第一个Node
         OldFirstNode.prev = currentNode;
         sentinelFirst.next = currentNode;
         size = 1;
     }
 
-    public void addLast(T item){
+    public void addLast(T item) {
         StuffNode OldLastNode = sentinelBack.prev;
         StuffNode currentNode = new StuffNode(OldLastNode, item, sentinelBack);
         OldLastNode.next = currentNode;
@@ -62,11 +63,13 @@ public class LinkedListDeque<T> implements Deque<T>{
 //    public boolean isEmpty(){
 //        return size == 0;
 //    }
-    public int size(){
+    public int size() {
         return size;
     }
-    public T removeFirst(){
-        if(isEmpty())   return null;
+    public T removeFirst() {
+        if(isEmpty()) {
+            return null;
+        }
         /*StuffNode SecondNode = sentinelFirst.next.next;
         SecondNode.prev = sentinelFirst;
         sentinelFirst.next = SecondNode;
@@ -80,8 +83,10 @@ public class LinkedListDeque<T> implements Deque<T>{
         return removedItem;
     }
 
-    public T removeLast(){
-        if(isEmpty())   return null;
+    public T removeLast() {
+        if (isEmpty()) {
+            return null;
+        }
         StuffNode LastNode = sentinelBack.prev;
         T removedItem = LastNode.item;
         sentinelBack.prev = LastNode.prev;
@@ -89,20 +94,23 @@ public class LinkedListDeque<T> implements Deque<T>{
         size --;
         return removedItem;
     }
-    public T get(int index){
-        if(index < 0 || index >= size){
+    public T get(int index) {
+        if (index < 0 || index >= size) {
             return null;
         }
         StuffNode p = sentinelFirst.next;
-        for(int i = 0; i < index; i++){
+        for (int i = 0; i < index; i++) {
             p = p.next;
         }
+
         return p.item;
     }
 
 
-    public T getRecursive(int index){
-        if(index < 0 || index >= size )      return null;
+    public T getRecursive(int index) {
+        if (index < 0 || index >= size ) {
+            return null;
+        }
         return getRecursiveHelper(sentinelFirst.next, index);
     }
 
@@ -112,8 +120,10 @@ public class LinkedListDeque<T> implements Deque<T>{
      * @param index
      * @return
      */
-    private T getRecursiveHelper(StuffNode node, int index){
-        if(index == 0)  return node.item;
+    private T getRecursiveHelper(StuffNode node, int index) {
+        if (index == 0) {
+            return node.item;
+        }
         return getRecursiveHelper(node.next, index - 1);
     }
     //two special method
@@ -125,19 +135,26 @@ public class LinkedListDeque<T> implements Deque<T>{
         }
     }*/
     //发现目前的水平不足以支持我写完，放弃
-    public boolean equals(Object o){
-        if(this == o)   return true;//means they are actually the same thing
-        if(!(o instanceof Deque))       return false;
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        }//means they are actually the same thing
+        if (!(o instanceof Deque)) {
+            return false;
+        }
         return false;
     }
 
-    public void printDeque(){
+    public void printDeque() {
         StuffNode p = sentinelFirst.next;
-        for(int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             System.out.print(p.item);
             p = p.next;
-            if(i != size - 1)   System.out.print(" ");
-            else    System.out.println();
+            if (i != size - 1) {
+                System.out.print(" ");
+            } else {
+                System.out.println();
+            }
         }
     }
 
