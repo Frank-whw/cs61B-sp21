@@ -8,6 +8,8 @@ import java.util.Objects;*/
 
 //import java.util.Deque;
 
+import java.util.Iterator;
+
 public class LinkedListDeque<T> implements Deque<T> {
     //@SuppressWarnings("unchecked")
     private StuffNode sentinelFirst;
@@ -58,7 +60,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         StuffNode currentNode = new StuffNode(oldlastNode, item, sentinelBack);
         oldlastNode.next = currentNode;
         sentinelBack.prev = currentNode;
-        size ++;
+        size++;
     }
 //    public boolean isEmpty(){
 //        return size == 0;
@@ -68,7 +70,7 @@ public class LinkedListDeque<T> implements Deque<T> {
     }
     public T removeFirst() {
         if (isEmpty()) {
-             return null;
+            return null;
         }
         /*StuffNode SecondNode = sentinelFirst.next.next;
         SecondNode.prev = sentinelFirst;
@@ -135,6 +137,27 @@ public class LinkedListDeque<T> implements Deque<T> {
         }
     }*/
     //发现目前的水平不足以支持我写完，放弃
+    public Iterator<T> iterator() {
+        return new LinkedListDequeIterator();
+    }
+
+    private class LinkedListDequeIterator implements Iterator<T> {
+        private StuffNode p;
+
+        LinkedListDequeIterator() {
+            p = sentinelFirst.next;
+        }
+
+        public boolean hasNext() {
+            return p.next == sentinelBack;
+        }
+
+        public T next() {
+            T item = p.item;
+            p = p.next;
+            return item;
+        }
+    }
     public boolean equals(Object o) {
         if (this == o) {
             return true;
