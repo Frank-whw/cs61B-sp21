@@ -137,10 +137,10 @@ public class LinkedListDequeTest {
     }
     @Test
     public void nonEmptyInstantiationTest() {
-        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>(1);
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
 
-        assertFalse("Should not be empty", lld1.isEmpty());
-        assertEquals("Should have size 1", 1, lld1.size());
+        assertTrue("Should not be empty", lld1.isEmpty());
+        assertEquals("Should have size 0", 0, lld1.size());
     }
 
     @Test

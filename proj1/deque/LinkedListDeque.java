@@ -10,7 +10,7 @@ import java.util.Objects;*/
 
 import java.util.Iterator;
 
-public class LinkedListDeque<T> implements Deque<T> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     //@SuppressWarnings("unchecked")
     private StuffNode sentinelFirst;
     private StuffNode sentinelBack;
@@ -137,6 +137,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         }
     }*/
     //发现目前的水平不足以支持我写完，放弃
+
     public Iterator<T> iterator() {
         return new LinkedListDequeIterator();
     }
@@ -149,7 +150,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         }
 
         public boolean hasNext() {
-            return p.next == sentinelBack;
+            return p != sentinelBack;
         }
 
         public T next() {
@@ -159,13 +160,27 @@ public class LinkedListDeque<T> implements Deque<T> {
         }
     }
     public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
         if (this == o) {
             return true;
         } //means they are actually the same thing
-        if (!(o instanceof Deque)) {
+
+        if (!(o instanceof LinkedListDeque)) {
             return false;
         }
-        return false;
+        LinkedListDeque<?> ad = (LinkedListDeque<?>) o;
+        if (ad.size() != size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (ad.get(i) != get(i)) {
+            //if (!Object.equals(ad.get(i), get(i)))
+                return false;
+            }
+        }
+        return true;
     }
 
     public void printDeque() {

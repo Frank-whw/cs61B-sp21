@@ -6,7 +6,7 @@ package deque;
 import java.util.Iterator;
 //import java.util.Objects;
 
-public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private T[] items = (T[]) new Object[8];
     private int size;
     private int nextFirst;
