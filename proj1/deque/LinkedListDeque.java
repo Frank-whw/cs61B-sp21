@@ -30,14 +30,14 @@ public class LinkedListDeque<T> implements Deque<T> {
     }
 
     //creat A LinkedListDeque
-    public LinkedListDeque(T i) {
+    /*public LinkedListDeque(T i) {
         sentinelFirst = new StuffNode(null, null, null);
         sentinelBack = new StuffNode(null, null, null);
         StuffNode currentNode = new StuffNode(sentinelFirst, i, sentinelBack);
         sentinelFirst.next = currentNode;
         sentinelBack.prev = currentNode;
         size = 1;
-    }
+    }*/
     public LinkedListDeque() {
         sentinelFirst = new StuffNode(null, null, null);
         sentinelBack  = new StuffNode(null, null, null);
@@ -52,7 +52,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         //这个时候sentinelFirst.next 应该还是指向原来的第一个Node
         oldfirstNode.prev = currentNode;
         sentinelFirst.next = currentNode;
-        size = 1;
+        size += 1;
     }
 
     public void addLast(T item) {

@@ -4,9 +4,9 @@ package deque;
 
 //import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Objects;
+//import java.util.Objects;
 
-public class ArrayDeque<T> implements Deque<T> {
+public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
     private T[] items = (T[]) new Object[8];
     private int size;
     private int nextFirst;
@@ -18,16 +18,16 @@ public class ArrayDeque<T> implements Deque<T> {
         nextLast = 5;
     }
 
-    public ArrayDeque(T x) {
+    /*public ArrayDeque(T x) {
         items[4] = x;
         nextFirst = 3;
         nextLast = 5;
         size = 1;
-    }
+    }*/
 
-    public boolean isEmpty() {
+    /*public boolean isEmpty() {
         return size == 0;
-    }
+    }*/
 
     public void addFirst(T x) {
         if (size == items.length) {
@@ -48,9 +48,9 @@ public class ArrayDeque<T> implements Deque<T> {
         size++;
     }
 
-    public T getLast() {
+    /*public T getLast() {
         return items[nextLast - 1];
-    }
+    }*/
     public T get(int i) {
         if (i < 0 || i >= size) {  // 使用 && 来确保索引合法
             return null;
@@ -109,6 +109,29 @@ public class ArrayDeque<T> implements Deque<T> {
                 System.out.println();
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof ArrayDeque)) {
+            return false;
+        }
+        ArrayDeque<?> ad = (ArrayDeque<?>) o;
+        if (ad.size() != size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (ad.get(i) != get(i)) {
+                return false;
+            }
+        }
+        return true;
     }
     public Iterator<T> iterator() {
         return new ArrayDequeIterator();

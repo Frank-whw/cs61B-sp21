@@ -4,19 +4,19 @@ package deque;
 import java.util.Comparator;
 
 //从别人的answer中得知: public class MaxArrayDeque<T> extends ArrayDeque<T>可以避免重复的的代码——继承
-public class MaxArrayDeque<T> {
-    private int size;
-    private T[] items = (T[]) new Object[8];
-    private int nextFirst;
-    private int nextLast;
-    private Comparator<T> comparator;
+public class MaxArrayDeque<T> extends ArrayDeque<T> {
+    //private int size;
+    //private T[] items = (T[]) new Object[8];
+    //private int nextFirst;
+    //private int nextLast;
+    private final Comparator<T> comparator;
     public MaxArrayDeque(Comparator<T> c) {
-        nextFirst = 4;
-        nextLast = 5;
+        //nextFirst = 4;
+        //nextLast = 5;
         comparator = c;
     }
 
-    public void addFirst(T item) {
+    /*public void addFirst(T item) {
         if (size == items.length) {
             resize(size * 2);
         }
@@ -92,13 +92,13 @@ public class MaxArrayDeque<T> {
         nextFirst = capacity - 1;
         nextLast = size;
         items = newItems;
-    }
+    }*/
     public T max(Comparator<T> c) {
         if (isEmpty()) {
             return null;
         }
         int maxIndex = 0;
-        for (int i = 1; i < size; i++) {
+        for (int i = 1; i < size(); i++) {
             if (c.compare(get(i), get(maxIndex)) > 0) {
                 maxIndex = i;
             }
@@ -107,5 +107,21 @@ public class MaxArrayDeque<T> {
     }
     public T max() {
         return max(comparator);
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof MaxArrayDeque)) {
+            return false;
+        }
+        if (((MaxArrayDeque<?>) o).max() != max()) {
+            return false;
+        }
+        return super.equals(o);
     }
 }
