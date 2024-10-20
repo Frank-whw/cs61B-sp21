@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.util.ResourceBundle;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author Frank
  */
@@ -46,6 +48,30 @@ public class Main {
                 Repository.checkInitialized();
                 Repository.log();
                 break;
+            case "global-log":
+                validateNumArgs(args, 1);
+                Repository.checkInitialized();
+                Repository.global_log();
+                break;
+            case "find":
+                validateNumArgs(args, 2);
+                Repository.checkInitialized();
+                Repository.find(args[1]);
+                break;
+            case "status":
+                validateNumArgs(args, 1);
+                Repository.checkInitialized();
+                Repository.status();
+                break;
+            case "checkout":
+                Repository.checkInitialized();
+                if (args.length == 3) {
+                    Repository.checkout(args[2]);
+                } else if (args.length == 4) {
+                    Repository.checkout(args[1], args[3]);
+                } else if (args.length == 2) {
+                    Repository.checkoutBranch(args[1]);
+                }
         }
     }
 

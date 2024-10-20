@@ -28,18 +28,18 @@ public class Commit implements Serializable {
     private String message;
     private String parent;
     private String timestamp;
-    private HashMap<String, String> blobs;// 存储文件名到文件内容哈希的映射
+    private HashMap<String, String> blobs; // 存储文件名到文件内容哈希的映射
 
     public Commit(String message, String parent) {
         this.message = message;
         this.parent = parent;
         if (this.parent == null) {
             Date date = new Date(0);
-            this.timestamp = dateTo_timestamp(date);
+            this.timestamp = dateto_timestamp(date);
         } else {
-            this.timestamp = dateTo_timestamp(new Date());
+            this.timestamp = dateto_timestamp(new Date());
         }
-        this.blobs = new HashMap<>();//初始化blobs
+        this.blobs = new HashMap<>(); //初始化blobs
     }
 
     public HashMap<String, String> getBlobs() {
@@ -62,7 +62,7 @@ public class Commit implements Serializable {
 
     //below is the realization of the timestamp
 
-    private static String dateTo_timestamp (Date date) {
+    private static String dateto_timestamp(Date date) {
         DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
         return dateFormat.format(date);
     }
