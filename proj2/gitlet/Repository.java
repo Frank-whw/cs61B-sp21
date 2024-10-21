@@ -101,7 +101,7 @@ public class Repository {
             System.exit(0);
         } else {
             //根据文件内容生成fileHash
-            byte[] fileContents = Utils.readContents(fileToadd);
+            String fileContents = Utils.readContentsAsString(fileToadd);
             String fileHash = Utils.sha1(fileContents);
             //根据以文件内容生成的hash值判断blobs里有没有相同版本的文件
             // ?????存疑：如果我用filename作为文件名，（不）相同文件会覆写
@@ -111,9 +111,9 @@ public class Repository {
             File fileInaddition = new File(STAGED_FOR_ADDITION, filename);
             File fileInremoval = new File(STAGED_FOR_REMOVAL, filename);
             if (!blobFile.exists()) {
-                //如果blobs中没有相同版本的file，把它加到暂存区/？？？？好像不需要
+                //如果blobs中没有相同版本的file，把它加到暂存区
                 //Utils.writeContents(blobFile, fileContents);
-                Utils.writeContents(fileInaddition, fileHash); //?可能有问题
+                Utils.writeContents(fileInaddition, fileContents);
             } else if (fileInremoval.exists()) {
                 //如果add的文件在STAGED_FOR_REMOVAL,则把这里面的文件删除
                 fileInremoval.delete();
@@ -140,8 +140,9 @@ public class Repository {
         //对于addition暂存区里的所有文件，都把它放在blobs里
         for (String fileName : fileInAddition) {
             File fileToCommit = new File(STAGED_FOR_ADDITION, fileName);
-            byte[] fileContents = Utils.readContents(fileToCommit); //读取文件内容
+            String fileContents = Utils.readContentsAsString(fileToCommit); //读取文件内容
             String fileHash = Utils.sha1(fileContents);
+            writeContents(fileToCommit, fileContents);
             // 把文件内容保存为 Blob 文件，文件名是根据文件内容生成的哈希值
             File blobFile = join(BLOBS_DIR, fileHash);
             // 如果 blob 文件还不存在，则将文件内容保存进去
@@ -202,7 +203,7 @@ public class Repository {
 
     public static void rm(String filename) {
         File fileToRemove = new File(filename);
-        byte[] fileContents = Utils.readContents(fileToRemove);
+        String fileContents = Utils.readContentsAsString(fileToRemove);
         String fileHash = Utils.sha1(fileContents);
         File fileInAdditon = join(STAGED_FOR_ADDITION, filename);
         Commit currentCommit = getHeadCommit(); //得到目前的commit,然后看它有没有track这个文件
@@ -393,7 +394,7 @@ public class Repository {
 
     public static void getBlobContent (File file, String blobname) {
         File blobFile = join(BLOBS_DIR, blobname);//通过value去找blob文件
-        byte[] contents = readContents(blobFile);
+        String contents = readContentsAsString(blobFile);
         writeContents(file, contents);
     }
 
