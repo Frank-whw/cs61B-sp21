@@ -338,9 +338,7 @@ public class Repository {
             //entry是每一个key—value
             if (entry.getKey().equals(filename)) { //如果有这个文件
                 File fileToadd = join(CWD, entry.getKey()); //key是待添加文件的文件名
-                File blobFile = join(BLOBS_DIR, entry.getValue()); //通过value去找blob文件
-                byte[] contents = readContents(blobFile);
-                writeContents(fileToadd, contents); //把blob中保存的内容写到cwd下面的fileToadd
+                getBlobContent(fileToadd, entry.getValue());
                 return;
             }
         }
@@ -356,6 +354,101 @@ public class Repository {
     }
 
     public static void checkoutBranch(String branchName) {
+        String currentBranch = readContentsAsString(HEAD);
+        //如果要checkout的branch就是当前的分支，则没有必要checkout
+        if (currentBranch.equals(branchName)) {
+            System.out.println("No need to checkout the current branch.");
+            System.exit(0);
+        }
+        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        for (String branch : branches) {
+            if (branch.equals(branchName)) {
+                File branchFile = join(BRANCHES_DIR, branch);
+                Commit branchCommit = readObject(branchFile, Commit.class);
+                Commit currentCommit = getHeadCommit();
+                for (Map.Entry<String, String> entry : branchCommit.getBlobs().entrySet()) {
+                    //获取branchCommit的每一个key&value
+                    File fileToadd = join(CWD, entry.getKey());
+                    // 如果currentCommit没有追踪这个文件，要报错
+                    if (!currentCommit.getBlobs().containsKey(entry.getKey())) {
+                        System.out.println("There is an untracked file in the way;" +
+                                " delete it, or add and commit it first.");
+                        System.exit(0);
+                    }
+                    getBlobContent(fileToadd, entry.getValue());
+                }
+                for (Map.Entry<String, String> entry : currentCommit.getBlobs().entrySet()) {
+                    File fileToremove = join(CWD, entry.getKey());
+                        if (!branchCommit.getBlobs().containsKey(entry.getKey())) {
+                            fileToremove.delete();
+                        }
+                    }
+                }
+            }
+        //没有在循环中结束说明没找到目标branch
+        System.out.println("No such branch exists.");
+        System.exit(0);
+        }
 
+
+    public static void getBlobContent (File file, String blobname) {
+        File blobFile = join(BLOBS_DIR, blobname);//通过value去找blob文件
+        byte[] contents = readContents(blobFile);
+        writeContents(file, contents);
+    }
+
+    public static void branch(String branchName) {
+        File branch = join(BRANCHES_DIR,branchName);
+        // 如果这个分支已经存在了就报错
+        if (branch.exists()) {
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+        Commit currentCommit = getHeadCommit();
+        writeObject(branch, currentCommit);
+    }
+
+    public static void rmBranch(String branchName) {
+        File branch = join(BRANCHES_DIR, branchName);
+        //如果不存在 报错
+        if (!branch.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        // 如果要删除当前指针，报错
+        String currentBranch = readContentsAsString(HEAD);
+        if (currentBranch.equals(branchName)) {
+            System.out.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        branch.delete();
+    }
+
+    public static void reset(String commitId) {
+        Commit currentCommit = getHeadCommit();
+        File commitFile = join(COMMITS_DIR,commitId);
+        //如果文件不存在 报错
+        if (!commitFile.exists()) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        Commit commitToreset = readObject(commitFile, Commit.class);
+        for (Map.Entry<String,String> entry : commitToreset.getBlobs().entrySet()){
+            //如果文件存在 没有被currentCommit追踪，则报错
+            File fileToadd = join(CWD, entry.getKey());
+            if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
+                System.out.println("There is an untracked file in the way; " +
+                        "delete it, or add and commit it first.");
+                System.exit(0);
+            }
+            getBlobContent(fileToadd, entry.getValue());
+        }
+        for (Map.Entry<String,String> entry : currentCommit.getBlobs().entrySet()) {
+            File fileToremove = join(CWD, entry.getKey());
+            // 如果当前commit追踪的文件不被指定commit追踪的话，则删除
+            if (fileToremove.exists() && commitToreset.getBlobs().containsKey(entry.getKey())) {
+                fileToremove.delete();
+            }
+        }
     }
 }

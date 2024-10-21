@@ -72,6 +72,22 @@ public class Main {
                 } else if (args.length == 2) {
                     Repository.checkoutBranch(args[1]);
                 }
+                break;
+            case "branch":
+                validateNumArgs(args, 2);
+                Repository.checkInitialized();
+                Repository.branch(args[1]);
+                break;
+            case "rm-branch":
+                validateNumArgs(args,2);
+                Repository.checkInitialized();
+                Repository.rmBranch(args[1]);
+                break;
+            case "reset":
+                validateNumArgs(args,2);
+                Repository.checkInitialized();
+                Repository.reset(args[1]);
+                break;
         }
     }
 
