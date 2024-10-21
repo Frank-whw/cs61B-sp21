@@ -304,9 +304,11 @@ public class Repository {
         System.out.println("=== Staged Files ===");
         List<String> filesInstagadd = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> filesInstagremove = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        filesInstagadd.addAll(filesInstagremove); //把2个暂存区的文件名都存在一个list里，方便按lexicographic order排序
-        Collections.sort(filesInstagadd); //原地按照lexicographic order排序
-        for (String file : filesInstagadd) {
+        List<String> newList = new ArrayList<>();
+        newList.addAll(filesInstagremove);
+        newList.addAll(filesInstagadd);
+        Collections.sort(newList); //原地按照lexicographic order排序
+        for (String file : newList) {
             System.out.println(file);
         }
         System.out.println();
