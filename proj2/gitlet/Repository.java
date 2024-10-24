@@ -291,43 +291,77 @@ public class Repository {
         //1. print Branches part
         System.out.println("=== Branches ===");
         List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        String currentBranch = readContentsAsString(HEAD);
         for (String branch : branches) {
-            String currentBranch = readContentsAsString(HEAD);
             if (branch.equals(currentBranch)) {
-                System.out.print("*");
+                System.out.println("*" + branch);
+            } else {
+                System.out.println(branch);
             }
-            System.out.println(branch);
         }
         System.out.println();
 
         //2.print Staged File
         System.out.println("=== Staged Files ===");
         List<String> filesInstagadd = plainFilenamesIn(STAGED_FOR_ADDITION);
-        List<String> filesInstagremove = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        List<String> newList = new ArrayList<>();
-        newList.addAll(filesInstagremove);
-        newList.addAll(filesInstagadd);
-        Collections.sort(newList); //原地按照lexicographic order排序
-        for (String file : newList) {
+        Collections.sort(filesInstagadd); //原地按照lexicographic order排序
+        for (String file : filesInstagadd) {
             System.out.println(file);
         }
         System.out.println();
 
         //3.print Removed Files
         System.out.println("=== Removed Files ===");
-        Collections.sort(REMOVED_FILE);
-        for (String file : REMOVED_FILE) {
+        List<String> fileInremove = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        Collections.sort(fileInremove);
+        for (String file : fileInremove) {
             System.out.println(file);
         }
         System.out.println();
 
         //4.print Modification Not Stated for Commit
         System.out.println("=== Modifications Not Staged For Commit ===");
-        //todo 有点难实现 先放着
+        List<String> trackedFile = getTrackedFiles(); //获取所有已追踪的文件
+        for (String file : trackedFile) {
+            File fileIncwd = join(CWD, file);
+            if (fileIncwd.exists()) {
+                //如果被追踪的文件存在于cwd，则比较它的哈希值
+                String contents = readContentsAsString(fileIncwd);
+                String fileHash = sha1(contents);
+                File blobs = join(BLOBS_DIR,fileHash);
+                if (!blobs.exists()) {
+                    //如果不存在 则说明cwd的文件被改动了
+                    System.out.println(file + "(modified)");
+                }
+            }
+        }
+        List<String> stageFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        for (String stagefile : stageFiles) {
+            File fileInCwd = join(CWD, stagefile);
+            if (!fileInCwd.exists()) {
+                System.out.println(stagefile + "(deleted)");
+            }
+        }
         System.out.println();
 
         //5.print Untracked Files
         System.out.println("=== Untracked Files ===");
+        List<String> cwdFiles = plainFilenamesIn(CWD);
+        Collections.sort(cwdFiles);
+        for (String file : cwdFiles) {
+            if (!trackedFile.contains(file)) {
+                System.out.println(file);
+            }
+        }
+    }
+
+    private static List<String> getTrackedFiles() {
+        List<String> trackedFile = new ArrayList<>();
+        Commit currentCommit = getHeadCommit();
+        for (Map.Entry<String,String> entry : currentCommit.getBlobs().entrySet()) {
+            trackedFile.add(entry.getKey()); //把commit追踪的文件名加入到trackedile中
+        }
+        return trackedFile;
     }
 
     public static void checkout(String commitID, String filename) {
@@ -392,8 +426,6 @@ public class Repository {
         System.out.println("No such branch exists.");
         System.exit(0);
         }
-
-
     public static void getBlobContent (File file, String blobname) {
         File blobFile = join(BLOBS_DIR, blobname);//通过value去找blob文件
         String contents = readContentsAsString(blobFile);
