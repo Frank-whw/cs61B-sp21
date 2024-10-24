@@ -122,6 +122,12 @@ public class Repository {
     }
 
     public static void commit(String message) {
+        if (message.length() == 0) {
+            // 如果没有message 报错
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
+
         List<String> fileInAddition = Utils.plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> fileInRemoval = Utils.plainFilenamesIn(STAGED_FOR_REMOVAL);
         //如果暂存区没有file，报错
@@ -155,7 +161,9 @@ public class Repository {
         }
         //对于removal暂存区里的所有文件，都把它从blobs里删除
         for (String fileName : fileInRemoval) {
-            newCommit.getBlobs().remove(fileName);
+            if (newBlobs.containsKey(fileName)) {
+                newCommit.getBlobs().remove(fileName);
+            }
         }
         //保存新的commit
         String newCommitId =  Utils.sha1(newCommit.getTimestamp()
@@ -202,7 +210,7 @@ public class Repository {
     }
 
     public static void rm(String filename) {
-        File fileToRemove = new File(filename);
+        File fileToRemove = new File(CWD,filename);
         String fileContents = Utils.readContentsAsString(fileToRemove);
         String fileHash = Utils.sha1(fileContents);
         File fileInAdditon = join(STAGED_FOR_ADDITION, filename);
@@ -336,23 +344,24 @@ public class Repository {
             }
         }
         List<String> stageFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
-        for (String stagefile : stageFiles) {
-            File fileInCwd = join(CWD, stagefile);
-            if (!fileInCwd.exists()) {
-                System.out.println(stagefile + "(deleted)");
-            }
-        }
+//        for (String stagefile : stageFiles) {
+//            File fileInCwd = join(CWD, stagefile);
+//            if (!fileInCwd.exists()) {
+//                System.out.println(stagefile + "(deleted)");
+//            }
+//        }
         System.out.println();
 
         //5.print Untracked Files
         System.out.println("=== Untracked Files ===");
-        List<String> cwdFiles = plainFilenamesIn(CWD);
-        Collections.sort(cwdFiles);
-        for (String file : cwdFiles) {
-            if (!trackedFile.contains(file)) {
-                System.out.println(file);
-            }
-        }
+//        List<String> cwdFiles = plainFilenamesIn(CWD);
+//        Collections.sort(cwdFiles);
+//        for (String file : cwdFiles) {
+//            if (!trackedFile.contains(file)) {
+//                System.out.println(file);
+//            }
+//        }
+        System.out.println();
     }
 
     private static List<String> getTrackedFiles() {
@@ -407,7 +416,7 @@ public class Repository {
                     //获取branchCommit的每一个key&value
                     File fileToadd = join(CWD, entry.getKey());
                     // 如果currentCommit没有追踪这个文件，要报错
-                    if (!currentCommit.getBlobs().containsKey(entry.getKey())) {
+                    if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
                         System.out.println("There is an untracked file in the way;" +
                                 " delete it, or add and commit it first.");
                         System.exit(0);
