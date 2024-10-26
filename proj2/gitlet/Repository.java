@@ -47,8 +47,7 @@ public class Repository {
     public static final File BRANCHES_DIR = join(GITLET_DIR, "branches");
     //判断有没有初始化
     public static void checkInitialized() {
-        File gitDir = new File(".gitlet");
-        if (!gitDir.exists()) {
+        if (!GITLET_DIR.exists()) {
             System.out.println("Not in an initialized Gitlet directory.");
             System.exit(0);
             //throw new IllegalArgumentException("")
@@ -59,7 +58,7 @@ public class Repository {
         if (GITLET_DIR.exists()) { //如果存在的话，要报错
             System.out.println("A Gitlet version-control " +
                     "system already exists in the current directory.");
-            return; //
+            System.exit(0); //
         } else {
             //创建".gitlet"文件
             GITLET_DIR.mkdir();
@@ -74,7 +73,7 @@ public class Repository {
             Commit initialCommit = new Commit("initial commit", null);
             //String commitID = Utils.sha1(initialCommit.getMessage() +
             // initialCommit.getTimestamp()+initialCommit.getBlobs() + initialCommit.getParent());
-            String commitID = Utils.sha1(initialCommit.getTimestamp());
+            String commitID = generateCommitID(initialCommit);
             File commitFile = join(COMMITS_DIR, commitID);
             Utils.writeObject(commitFile, initialCommit);
             //把commit的信息写入以commit信息序列化成的字符为名的文件中保存
@@ -94,35 +93,39 @@ public class Repository {
         }
     }
 
+    private static String generateCommitID(Commit commit) {
+        return Utils.sha1(commit.getTimestamp(),commit.getBlobs(),commit.getMessage(),commit.getParent());
+    }
+
     public static void add(String filename) {
         File fileToadd = new File(filename);
         if (!fileToadd.exists()) {
             System.out.println("File does not exist.");
             System.exit(0);
-        } else {
-            //根据文件内容生成fileHash
-            String fileContents = Utils.readContentsAsString(fileToadd);
-            String fileHash = Utils.sha1(fileContents);
-            //根据以文件内容生成的hash值判断blobs里有没有相同版本的文件
-            // ?????存疑：如果我用filename作为文件名，（不）相同文件会覆写
-            File blobFile = new File(BLOBS_DIR, fileHash);
-            //添加到staging area的文件名就是传入的filename
-
-            File fileInaddition = new File(STAGED_FOR_ADDITION, filename);
-            File fileInremoval = new File(STAGED_FOR_REMOVAL, filename);
-            if (!blobFile.exists()) {
-                //如果blobs中没有相同版本的file，把它加到暂存区
-                //Utils.writeContents(blobFile, fileContents);
-                Utils.writeContents(fileInaddition, fileContents);
-            } else if (fileInremoval.exists()) {
-                //如果add的文件在STAGED_FOR_REMOVAL,则把这里面的文件删除
-                fileInremoval.delete();
-            }
         }
+        //根据文件内容生成fileHash
+        String fileContents = Utils.readContentsAsString(fileToadd);
+        String fileHash = Utils.sha1(fileContents);
+        //根据以文件内容生成的hash值判断blobs里有没有相同版本的文件
+        // ?????存疑：如果我用filename作为文件名，（不）相同文件会覆写
+        File blobFile = new File(BLOBS_DIR, fileHash);
+        //添加到staging area的文件名就是传入的filename
+
+        File fileInaddition = new File(STAGED_FOR_ADDITION, filename);
+        File fileInremoval = new File(STAGED_FOR_REMOVAL, filename);
+        if (!blobFile.exists()) {
+            //如果blobs中没有相同版本的file，把它加到暂存区
+            //Utils.writeContents(blobFile, fileContents);
+            Utils.writeContents(fileInaddition, fileContents);
+        } else if (fileInremoval.exists()) {
+            //如果add的文件在STAGED_FOR_REMOVAL,则把这里面的文件删除
+            fileInremoval.delete();
+        }
+
     }
 
     public static void commit(String message) {
-        if (message.length() == 0) {
+        if (message.isEmpty()) {
             // 如果没有message 报错
             System.out.println("Please enter a commit message.");
             System.exit(0);
@@ -148,7 +151,7 @@ public class Repository {
             File fileToCommit = new File(STAGED_FOR_ADDITION, fileName);
             String fileContents = Utils.readContentsAsString(fileToCommit); //读取文件内容
             String fileHash = Utils.sha1(fileContents);
-            writeContents(fileToCommit, fileContents);
+            //writeContents(fileToCommit, fileContents);//这行代码是什么勾八东西
             // 把文件内容保存为 Blob 文件，文件名是根据文件内容生成的哈希值
             File blobFile = join(BLOBS_DIR, fileHash);
             // 如果 blob 文件还不存在，则将文件内容保存进去
@@ -161,13 +164,10 @@ public class Repository {
         }
         //对于removal暂存区里的所有文件，都把它从blobs里删除
         for (String fileName : fileInRemoval) {
-            if (newBlobs.containsKey(fileName)) {
-                newCommit.getBlobs().remove(fileName);
-            }
+            newBlobs.remove(fileName);
         }
         //保存新的commit
-        String newCommitId =  Utils.sha1(newCommit.getTimestamp()
-                + newCommit.getMessage() + newCommit.getParent());
+        String newCommitId =  generateCommitID(newCommit);
         File commitFile = join(COMMITS_DIR, newCommitId);
         Utils.writeObject(commitFile, newCommit);
         //修改当前分支指向为最新的commit
@@ -198,21 +198,19 @@ public class Repository {
         String headCommitId = getHeadCommitId();
         //System.out.println(headCommitId);
         File commitFile = join(COMMITS_DIR, headCommitId);
-        Commit headCommit = readObject(commitFile, Commit.class);
-        return headCommit;
+        return readObject(commitFile, Commit.class);
     }
     private static String getHeadCommitId() {
         //String headCommitId = Utils.readContentsAsString(HEAD);这边可能readContentsAsString可能有问题
         String branchName = readContentsAsString(HEAD); //先提取HEAD指向的分支名
         File branch = join(BRANCHES_DIR, branchName); //根据分支名找到存储commit的文件
-        String headCommitId = readContentsAsString(branch);
-        return headCommitId;
+        return readContentsAsString(branch);
     }
 
     public static void rm(String filename) {
-        File fileToRemove = new File(CWD,filename);
-        String fileContents = Utils.readContentsAsString(fileToRemove);
-        String fileHash = Utils.sha1(fileContents);
+        File fileToRemove = join(CWD,filename);
+        //String fileContents = Utils.readContentsAsString(fileToRemove);
+        //String fileHash = Utils.sha1(fileContents);
         File fileInAdditon = join(STAGED_FOR_ADDITION, filename);
         Commit currentCommit = getHeadCommit(); //得到目前的commit,然后看它有没有track这个文件
         if (!fileInAdditon.exists() && !currentCommit.getBlobs().containsKey(filename)) {
@@ -226,38 +224,47 @@ public class Repository {
         //如果这个文件被track，则把它加到remove暂存区，并在cwd中删除这个文件
         if (currentCommit.getBlobs().containsKey(filename)) {
             File fileRe = join(STAGED_FOR_REMOVAL, filename);
-            Utils.writeContents(fileRe, fileHash); //以原来的文件名保存，但是内容都是加密过的
+            Utils.writeContents(fileRe, currentCommit.getBlobs().get(filename)); //以原来的文件名保存，但是内容都是加密过的
             REMOVED_FILE.add(filename);
-            File fileInCWD = new File(CWD, filename);
-            fileInCWD.delete();
+            //File fileInCWD = new File(CWD, filename);
+            //fileInCWD.delete();
+            fileToRemove.delete();
         }
     }
     public static void log() {
         String  currentCommitid = getHeadCommitId();
         Commit currentCommit = getHeadCommit();
-        while (true) {
-            System.out.println("===");
-            System.out.println("commit " + currentCommitid);
+        while (currentCommit != null) {
+            printCommitLog(currentCommitid, currentCommit);
             //todo 如果合并过，要再显示Merge: 4975af1 2c1ead1
-            System.out.println("Date: " + currentCommit.getTimestamp());
-            System.out.println(currentCommit.getMessage());
+            String parentCommitId = currentCommit.getParent();
             //如果currentCommit是initialCommit则退出循环
-            if (currentCommit.getParent() == null) {
-                return;
+            if (parentCommitId == null) {
+                break;
             }
             //把String parent加密
             //String parentCommitid = Utils.sha1(currentCommit.getParent()); //这边有问题，getParent得到的是加密后的字符串
-            String parentCommitid = currentCommit.getParent();
-            File parentCommitfile = join(COMMITS_DIR, parentCommitid);
-            if (!parentCommitfile.exists()) {
-                System.out.println(parentCommitid);
-            }
-            //再把文件内容转换成Commit.class
-            currentCommit = Utils.readObject(parentCommitfile, Commit.class);
-            currentCommitid = Utils.sha1(currentCommit.getTimestamp()
-                    + currentCommit.getMessage() + currentCommit.getParent());
-            System.out.println();
+//            if (!parentCommitfile.exists()) {
+//                System.out.println(parentCommitid);
+//            }
+//            //再把文件内容转换成Commit.class
+//            currentCommit = Utils.readObject(parentCommitfile, Commit.class);
+//            currentCommitid = Utils.sha1(currentCommit.getTimestamp()
+//                    + currentCommit.getMessage() + currentCommit.getParent());
+//            System.out.println();
+            currentCommitid = parentCommitId;
+            currentCommit = readObject(join(COMMITS_DIR,currentCommitid),Commit.class);
+
         }
+    }
+
+    private static void printCommitLog(String commitid, Commit commit) {
+        System.out.println("===");
+        System.out.println("commit " + commitid);
+        System.out.println("Date: " + commit.getTimestamp());
+        System.out.println(commit.getMessage());
+        System.out.println(commit.getMessage());
+        System.out.println();
     }
 
     public static void global_log() {
@@ -279,18 +286,18 @@ public class Repository {
     }
 
     public static void find(String message) {
-        int flag = 0;
+        boolean found = false;
         List<String> files = Utils.plainFilenamesIn(COMMITS_DIR);
         for (String file : files) {
             File commitFile = join(COMMITS_DIR, file);
             Commit commit = Utils.readObject(commitFile, Commit.class);
             //System.out.println(commit.getMessage() + " " + message);
             if (commit.getMessage().equals(message)) {
-                flag = 1;
+                found = true;
                 System.out.println(file);
             }
         }
-        if (flag == 0) {
+        if (!found) {
             System.out.println("Found no commit with that message.");
         }
     }
@@ -300,6 +307,7 @@ public class Repository {
         System.out.println("=== Branches ===");
         List<String> branches = plainFilenamesIn(BRANCHES_DIR);
         String currentBranch = readContentsAsString(HEAD);
+        branches.sort(String::compareTo);
         for (String branch : branches) {
             if (branch.equals(currentBranch)) {
                 System.out.println("*" + branch);
@@ -313,15 +321,17 @@ public class Repository {
         System.out.println("=== Staged Files ===");
         List<String> filesInstagadd = plainFilenamesIn(STAGED_FOR_ADDITION);
         Collections.sort(filesInstagadd); //原地按照lexicographic order排序
-        for (String file : filesInstagadd) {
-            System.out.println(file);
-        }
+        filesInstagadd.sort(String::compareTo);
+        filesInstagadd.forEach(System.out::println);
+//        for (String file : filesInstagadd) {
+//            System.out.println(file);
+//        }
         System.out.println();
 
         //3.print Removed Files
         System.out.println("=== Removed Files ===");
         List<String> fileInremove = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        Collections.sort(fileInremove);
+        fileInremove.sort(String::compareTo);
         for (String file : fileInremove) {
             System.out.println(file);
         }
@@ -334,12 +344,9 @@ public class Repository {
             File fileIncwd = join(CWD, file);
             if (fileIncwd.exists()) {
                 //如果被追踪的文件存在于cwd，则比较它的哈希值
-                String contents = readContentsAsString(fileIncwd);
-                String fileHash = sha1(contents);
-                File blobs = join(BLOBS_DIR,fileHash);
-                if (!blobs.exists()) {
-                    //如果不存在 则说明cwd的文件被改动了
-                    System.out.println(file + "(modified)");
+                String cwdHash = sha1(readContentsAsString(fileIncwd));
+                if (!cwdHash.equals(getHeadCommit().getBlobs().get(file))) {
+                    System.out.println(file + " (modified)");
                 }
             }
         }
@@ -406,37 +413,66 @@ public class Repository {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
         }
-        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
-        for (String branch : branches) {
-            if (branch.equals(branchName)) {
-                File branchFile = join(BRANCHES_DIR, branch);
-                Commit branchCommit = readObject(branchFile, Commit.class);
-                Commit currentCommit = getHeadCommit();
-                for (Map.Entry<String, String> entry : branchCommit.getBlobs().entrySet()) {
-                    //获取branchCommit的每一个key&value
-                    File fileToadd = join(CWD, entry.getKey());
-                    // 如果currentCommit没有追踪这个文件，要报错
-                    if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
-                        System.out.println("There is an untracked file in the way;" +
-                                " delete it, or add and commit it first.");
-                        System.exit(0);
-                    }
-                    getBlobContent(fileToadd, entry.getValue());
-                }
-                for (Map.Entry<String, String> entry : currentCommit.getBlobs().entrySet()) {
-                    File fileToremove = join(CWD, entry.getKey());
-                        if (!branchCommit.getBlobs().containsKey(entry.getKey())) {
-                            fileToremove.delete();
-                        }
-                    }
-                }
+        File branchFile = join(BRANCHES_DIR, branchName);
+        if (!branchFile.exists()) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+        }
+        String branchCommitId = readContentsAsString(branchFile);
+        Commit branchCommit = readObject(join(COMMITS_DIR,branchCommitId),Commit.class);
+        Commit currentCommit = getHeadCommit();
+        for (String filename : branchCommit.getBlobs().keySet()) {
+            File fileIncwd = join(CWD, filename);
+            if (fileIncwd.exists() && !currentCommit.getBlobs().containsKey(filename)) {
+                System.out.println("There is an untracked file in the way;" +
+                        " delete it, or add and commit it first.");
+                System.exit(0);
             }
-        //没有在循环中结束说明没找到目标branch
-        System.out.println("No such branch exists.");
-        System.exit(0);
+            getBlobContent(fileIncwd,branchCommit.getBlobs().get(filename));
+        }
+        for (String filename : currentCommit.getBlobs().keySet()) {
+            if (!branchCommit.getBlobs().containsKey(filename)) {
+                File fileToRemove = join(CWD, filename);
+                fileToRemove.delete();
+            }
+        }
+
+        // Update HEAD to point to the new branch
+        Utils.writeContents(HEAD, branchName);
+//        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+//        for (String branch : branches) {
+//            if (branch.equals(branchName)) {
+//                Commit branchCommit = readObject(branchFile, Commit.class);
+//                Commit currentCommit = getHeadCommit();
+//                for (Map.Entry<String, String> entry : branchCommit.getBlobs().entrySet()) {
+//                    //获取branchCommit的每一个key&value
+//                    File fileToadd = join(CWD, entry.getKey());
+//                    // 如果currentCommit没有追踪这个文件，要报错
+//                    if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
+//                        System.out.println("There is an untracked file in the way;" +
+//                                " delete it, or add and commit it first.");
+//                        System.exit(0);
+//                    }
+//                    getBlobContent(fileToadd, entry.getValue());
+//                }
+//                for (Map.Entry<String, String> entry : currentCommit.getBlobs().entrySet()) {
+//                    File fileToremove = join(CWD, entry.getKey());
+//                        if (!branchCommit.getBlobs().containsKey(entry.getKey())) {
+//                            fileToremove.delete();
+//                        }
+//                    }
+//                }
+//            }
+//        //没有在循环中结束说明没找到目标branch
+//        System.out.println("No such branch exists.");
+//        System.exit(0);
         }
     public static void getBlobContent (File file, String blobname) {
         File blobFile = join(BLOBS_DIR, blobname);//通过value去找blob文件
+        if (!blobFile.exists()) {
+            System.out.println("Blob file does not exist.");
+            System.exit(0);
+        }
         String contents = readContentsAsString(blobFile);
         writeContents(file, contents);
     }
@@ -448,8 +484,8 @@ public class Repository {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
-        Commit currentCommit = getHeadCommit();
-        writeObject(branch, currentCommit);
+        String currentCommitId = getHeadCommitId();
+        writeObject(branch, currentCommitId);
     }
 
     public static void rmBranch(String branchName) {
@@ -469,13 +505,13 @@ public class Repository {
     }
 
     public static void reset(String commitId) {
-        Commit currentCommit = getHeadCommit();
         File commitFile = join(COMMITS_DIR,commitId);
         //如果文件不存在 报错
         if (!commitFile.exists()) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
         }
+        Commit currentCommit = getHeadCommit();
         Commit commitToreset = readObject(commitFile, Commit.class);
         for (Map.Entry<String,String> entry : commitToreset.getBlobs().entrySet()){
             //如果文件存在 没有被currentCommit追踪，则报错
