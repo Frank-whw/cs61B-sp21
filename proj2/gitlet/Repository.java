@@ -494,7 +494,7 @@ public class Repository {
 
     public static void reset(String commitId) {
         File commitFile = join(COMMITS_DIR,commitId);
-        //如果文件不存在 报错
+        //如果文件不存在 报错xin
         if (!commitFile.exists()) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
