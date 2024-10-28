@@ -107,12 +107,21 @@ public class Repository {
         String fileContents = Utils.readContentsAsString(fileToadd);
         String fileHash = Utils.sha1(fileContents);
         //添加到staging area的文件名就是传入的filename
-
-        File fileInaddition = new File(STAGED_FOR_ADDITION, filename);
-        File fileInremoval = new File(STAGED_FOR_REMOVAL, filename);
+        File fileInaddition = join(STAGED_FOR_ADDITION, filename);
+        File fileInremoval = join(STAGED_FOR_REMOVAL, filename);
         Commit headCommit = getHeadCommit();
+
+
         // 检查文件是否已被跟踪且内容未更改
-        if (headCommit.getBlobs().containsKey(filename) &&headCommit.getBlobs().get(filename).equals(fileHash)) {
+        if (headCommit.getBlobs().containsKey(filename) && headCommit.getBlobs().get(filename).equals(fileHash)) {
+            if (fileInremoval.exists()) {
+                fileInremoval.delete();
+            }
+            //如果文件已经被暂存了，但后来被修改回了和提交中一样的状态，
+            // 你需要把它从暂存区移除，因为不再需要提交这个文件。
+            if (fileInaddition.exists()) {
+                fileInaddition.delete();
+            }
             return;
         }
         // 若文件内容改变，将文件内容写入 BLOB 文件
@@ -217,6 +226,7 @@ public class Repository {
         //String fileContents = Utils.readContentsAsString(fileToRemove);
         //String fileHash = Utils.sha1(fileContents);
         File fileInAdditon = join(STAGED_FOR_ADDITION, filename);
+        File fileInRemoval = join(STAGED_FOR_REMOVAL, filename);
         Commit currentCommit = getHeadCommit(); //得到目前的commit,然后看它有没有track这个文件
         if (!fileInAdditon.exists() && !currentCommit.getBlobs().containsKey(filename)) {
             System.out.println("No reason to remove the file.");
@@ -489,7 +499,7 @@ public class Repository {
             System.exit(0);
         }
         String currentCommitId = getHeadCommitId();
-        writeObject(branch, currentCommitId);
+        writeContents(branch, currentCommitId);
     }
 
     public static void rmBranch(String branchName) {
@@ -517,6 +527,7 @@ public class Repository {
         }
         Commit currentCommit = getHeadCommit();
         Commit commitToreset = readObject(commitFile, Commit.class);
+
         for (Map.Entry<String,String> entry : commitToreset.getBlobs().entrySet()){
             //如果文件存在 没有被currentCommit追踪，则报错
             File fileToadd = join(CWD, entry.getKey());
@@ -534,5 +545,9 @@ public class Repository {
                 fileToremove.delete();
             }
         }
+        // 更新当前分支的 HEAD 指向指定 commitId
+        String currentBranch = readContentsAsString(HEAD);
+        File branchFile = join(BRANCHES_DIR, currentBranch);
+        Utils.writeContents(branchFile, commitId);
     }
 }
