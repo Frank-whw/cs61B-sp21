@@ -94,7 +94,7 @@ public class Repository {
     }
 
     private static String generateCommitID(Commit commit) {
-        return Utils.sha1(commit.getTimestamp(),commit.getBlobs(),commit.getMessage(),commit.getParent());
+        return Utils.sha1(commit.getTimestamp()+commit.getBlobs()+commit.getMessage()+commit.getParent());
     }
 
     public static void add(String filename) {
@@ -262,7 +262,6 @@ public class Repository {
         System.out.println("===");
         System.out.println("commit " + commitid);
         System.out.println("Date: " + commit.getTimestamp());
-        System.out.println(commit.getMessage());
         System.out.println(commit.getMessage());
         System.out.println();
     }
