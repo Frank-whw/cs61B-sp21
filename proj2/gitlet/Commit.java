@@ -5,19 +5,19 @@ package gitlet;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
+ *  It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ *  @author Frank
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
+     * add instance variables here.
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -35,9 +35,9 @@ public class Commit implements Serializable {
         this.parent = parent;
         if (this.parent == null) {
             Date date = new Date(0);
-            this.timestamp = dateto_timestamp(date);
+            this.timestamp = dateTotimestamp(date);
         } else {
-            this.timestamp = dateto_timestamp(new Date());
+            this.timestamp = dateTotimestamp(new Date());
         }
         this.blobs = new HashMap<>(); //初始化blobs
     }
@@ -56,13 +56,12 @@ public class Commit implements Serializable {
         return this.timestamp;
     }
 
-    /* TODO: fill in the rest of this class. */
     /** branch */
 
 
     //below is the realization of the timestamp
 
-    private static String dateto_timestamp(Date date) {
+    private static String dateTotimestamp(Date date) {
         DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
         return dateFormat.format(date);
     }

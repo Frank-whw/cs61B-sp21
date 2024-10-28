@@ -271,7 +271,7 @@ public class Repository {
 //                    + currentCommit.getMessage() + currentCommit.getParent());
 //            System.out.println();
             currentCommitid = parentCommitId;
-            currentCommit = readObject(join(COMMITS_DIR,currentCommitid),Commit.class);
+            currentCommit = readObject(join(COMMITS_DIR, currentCommitid), Commit.class);
 
         }
     }
@@ -454,8 +454,8 @@ public class Repository {
 
         // Update HEAD to point to the new branch
         Utils.writeContents(HEAD, branchName);
-        }
-    public static void getBlobContent (File file, String blobname) {
+    }
+    public static void getBlobContent(File file, String blobname) {
         File blobFile = join(BLOBS_DIR, blobname); //通过value去找blob文件
         if (!blobFile.exists()) {
             System.out.println("Blob file does not exist.");
@@ -466,7 +466,7 @@ public class Repository {
     }
 
     public static void branch(String branchName) {
-        File branch = join(BRANCHES_DIR,branchName);
+        File branch = join(BRANCHES_DIR, branchName);
         // 如果这个分支已经存在了就报错
         if (branch.exists()) {
             System.out.println("A branch with that name already exists.");
@@ -493,7 +493,7 @@ public class Repository {
     }
 
     public static void reset(String commitId) {
-        File commitFile = join(COMMITS_DIR,commitId);
+        File commitFile = join(COMMITS_DIR, commitId);
         //如果文件不存在 报错xin
         if (!commitFile.exists()) {
             System.out.println("No commit with that id exists.");
@@ -502,12 +502,12 @@ public class Repository {
         Commit currentCommit = getHeadCommit();
         Commit commitToreset = readObject(commitFile, Commit.class);
 
-        for (Map.Entry<String,String> entry : commitToreset.getBlobs().entrySet()) {
+        for (Map.Entry<String, String> entry : commitToreset.getBlobs().entrySet()) {
             //如果文件存在 没有被currentCommit追踪，则报错
             File fileToadd = join(CWD, entry.getKey());
             if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
-                System.out.println("There is an untracked file in the way; " +
-                        "delete it, or add and commit it first.");
+                System.out.println("There is an untracked file in the way; "
+                        + "delete it, or add and commit it first.");
                 System.exit(0);
             }
             getBlobContent(fileToadd, entry.getValue());
