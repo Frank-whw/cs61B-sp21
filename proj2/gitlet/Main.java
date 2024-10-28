@@ -51,7 +51,7 @@ public class Main {
             case "global-log":
                 validateNumArgs(args, 1);
                 Repository.checkInitialized();
-                Repository.global_log();
+                Repository.globalLog();
                 break;
             case "find":
                 validateNumArgs(args, 2);

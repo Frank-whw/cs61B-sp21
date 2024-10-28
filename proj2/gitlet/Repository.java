@@ -25,7 +25,7 @@ import static gitlet.Utils.*;
  *  @author TODO
  */
 public class Repository {
-    public static List<String> REMOVED_FILE = new ArrayList<>();
+
     /**
      *
      * List all instance variables of the Repository class here with a useful
@@ -56,8 +56,8 @@ public class Repository {
 
     public static void init() {
         if (GITLET_DIR.exists()) { //如果存在的话，要报错
-            System.out.println("A Gitlet version-control " +
-                    "system already exists in the current directory.");
+            System.out.println("A Gitlet version-control "
+                    + "system already exists in the current directory.");
             System.exit(0); //
         } else {
             //创建".gitlet"文件
@@ -94,7 +94,8 @@ public class Repository {
     }
 
     private static String generateCommitID(Commit commit) {
-        return Utils.sha1(commit.getTimestamp()+commit.getBlobs()+commit.getMessage()+commit.getParent());
+        return Utils.sha1(commit.getTimestamp()
+                + commit.getBlobs() + commit.getMessage() + commit.getParent());
     }
 
     public static void add(String filename) {
@@ -113,7 +114,8 @@ public class Repository {
 
 
         // 检查文件是否已被跟踪且内容未更改
-        if (headCommit.getBlobs().containsKey(filename) && headCommit.getBlobs().get(filename).equals(fileHash)) {
+        if (headCommit.getBlobs().containsKey(filename)
+                && headCommit.getBlobs().get(filename).equals(fileHash)) {
             if (fileInremoval.exists()) {
                 fileInremoval.delete();
             }
@@ -130,7 +132,7 @@ public class Repository {
             Utils.writeContents(blobFile, fileContents);
         }
         // 将文件内容写入 STAGED_FOR_ADDITION 中
-        Utils.writeContents(fileInaddition,fileContents);
+        Utils.writeContents(fileInaddition, fileContents);
 
         //如果add的文件在STAGED_FOR_REMOVAL,则把这里面的文件删除
         if (fileInremoval.exists()) {
@@ -222,7 +224,7 @@ public class Repository {
     }
 
     public static void rm(String filename) {
-        File fileToRemove = join(CWD,filename);
+        File fileToRemove = join(CWD, filename);
         //String fileContents = Utils.readContentsAsString(fileToRemove);
         //String fileHash = Utils.sha1(fileContents);
         File fileInAdditon = join(STAGED_FOR_ADDITION, filename);
@@ -239,8 +241,8 @@ public class Repository {
         //如果这个文件被track，则把它加到remove暂存区，并在cwd中删除这个文件
         if (currentCommit.getBlobs().containsKey(filename)) {
             File fileRe = join(STAGED_FOR_REMOVAL, filename);
-            Utils.writeContents(fileRe, currentCommit.getBlobs().get(filename)); //以原来的文件名保存，但是内容都是加密过的
-            REMOVED_FILE.add(filename);
+            Utils.writeContents(fileRe, currentCommit.getBlobs().get(filename));
+            //以原来的文件名保存，但是内容都是加密过的
             //File fileInCWD = new File(CWD, filename);
             //fileInCWD.delete();
             fileToRemove.delete();
@@ -258,7 +260,8 @@ public class Repository {
                 break;
             }
             //把String parent加密
-            //String parentCommitid = Utils.sha1(currentCommit.getParent()); //这边有问题，getParent得到的是加密后的字符串
+            //String parentCommitid = Utils.sha1(currentCommit.getParent());
+            // 这边有问题，getParent得到的是加密后的字符串
 //            if (!parentCommitfile.exists()) {
 //                System.out.println(parentCommitid);
 //            }
@@ -281,7 +284,7 @@ public class Repository {
         System.out.println();
     }
 
-    public static void global_log() {
+    public static void globalLog() {
         int first = 1;
         List<String> fileIncommit = plainFilenamesIn(COMMITS_DIR);
         for (String commitId : fileIncommit) {
@@ -292,10 +295,7 @@ public class Repository {
             } else {
                 System.out.println();
             }
-            System.out.println("===");
-            System.out.println("commit " + commitId);
-            System.out.println(commitPrint.getTimestamp());
-            System.out.println(commitPrint.getMessage());
+            printCommitLog(commitId, commitPrint);
         }
     }
 
@@ -388,7 +388,7 @@ public class Repository {
     private static List<String> getTrackedFiles() {
         List<String> trackedFile = new ArrayList<>();
         Commit currentCommit = getHeadCommit();
-        for (Map.Entry<String,String> entry : currentCommit.getBlobs().entrySet()) {
+        for (Map.Entry<String, String> entry : currentCommit.getBlobs().entrySet()) {
             trackedFile.add(entry.getKey()); //把commit追踪的文件名加入到trackedile中
         }
         return trackedFile;
@@ -399,6 +399,7 @@ public class Repository {
         if (!commitFile.exists()) {
             //如果这个文件不存在，说明commitID无效
             System.out.println("No commit with that id exists.");
+            System.exit(0);
         }
         Commit commit = readObject(commitFile, Commit.class);
         for (Map.Entry<String, String> entry : commit.getBlobs().entrySet()) {
@@ -433,16 +434,16 @@ public class Repository {
             System.exit(0);
         }
         String branchCommitId = readContentsAsString(branchFile);
-        Commit branchCommit = readObject(join(COMMITS_DIR,branchCommitId),Commit.class);
+        Commit branchCommit = readObject(join(COMMITS_DIR, branchCommitId), Commit.class);
         Commit currentCommit = getHeadCommit();
         for (String filename : branchCommit.getBlobs().keySet()) {
             File fileIncwd = join(CWD, filename);
             if (fileIncwd.exists() && !currentCommit.getBlobs().containsKey(filename)) {
-                System.out.println("There is an untracked file in the way;" +
-                        " delete it, or add and commit it first.");
+                System.out.println("There is an untracked file in the way;"
+                        + " delete it, or add and commit it first.");
                 System.exit(0);
             }
-            getBlobContent(fileIncwd,branchCommit.getBlobs().get(filename));
+            getBlobContent(fileIncwd, branchCommit.getBlobs().get(filename));
         }
         for (String filename : currentCommit.getBlobs().keySet()) {
             if (!branchCommit.getBlobs().containsKey(filename)) {
@@ -453,36 +454,9 @@ public class Repository {
 
         // Update HEAD to point to the new branch
         Utils.writeContents(HEAD, branchName);
-//        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
-//        for (String branch : branches) {
-//            if (branch.equals(branchName)) {
-//                Commit branchCommit = readObject(branchFile, Commit.class);
-//                Commit currentCommit = getHeadCommit();
-//                for (Map.Entry<String, String> entry : branchCommit.getBlobs().entrySet()) {
-//                    //获取branchCommit的每一个key&value
-//                    File fileToadd = join(CWD, entry.getKey());
-//                    // 如果currentCommit没有追踪这个文件，要报错
-//                    if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
-//                        System.out.println("There is an untracked file in the way;" +
-//                                " delete it, or add and commit it first.");
-//                        System.exit(0);
-//                    }
-//                    getBlobContent(fileToadd, entry.getValue());
-//                }
-//                for (Map.Entry<String, String> entry : currentCommit.getBlobs().entrySet()) {
-//                    File fileToremove = join(CWD, entry.getKey());
-//                        if (!branchCommit.getBlobs().containsKey(entry.getKey())) {
-//                            fileToremove.delete();
-//                        }
-//                    }
-//                }
-//            }
-//        //没有在循环中结束说明没找到目标branch
-//        System.out.println("No such branch exists.");
-//        System.exit(0);
         }
     public static void getBlobContent (File file, String blobname) {
-        File blobFile = join(BLOBS_DIR, blobname);//通过value去找blob文件
+        File blobFile = join(BLOBS_DIR, blobname); //通过value去找blob文件
         if (!blobFile.exists()) {
             System.out.println("Blob file does not exist.");
             System.exit(0);
@@ -528,7 +502,7 @@ public class Repository {
         Commit currentCommit = getHeadCommit();
         Commit commitToreset = readObject(commitFile, Commit.class);
 
-        for (Map.Entry<String,String> entry : commitToreset.getBlobs().entrySet()){
+        for (Map.Entry<String,String> entry : commitToreset.getBlobs().entrySet()) {
             //如果文件存在 没有被currentCommit追踪，则报错
             File fileToadd = join(CWD, entry.getKey());
             if (fileToadd.exists() && !currentCommit.getBlobs().containsKey(entry.getKey())) {
@@ -538,10 +512,10 @@ public class Repository {
             }
             getBlobContent(fileToadd, entry.getValue());
         }
-        for (Map.Entry<String,String> entry : currentCommit.getBlobs().entrySet()) {
+        for (Map.Entry<String, String> entry : currentCommit.getBlobs().entrySet()) {
             File fileToremove = join(CWD, entry.getKey());
             // 如果当前commit追踪的文件不被指定commit追踪的话，则删除
-            if (fileToremove.exists() && commitToreset.getBlobs().containsKey(entry.getKey())) {
+            if (fileToremove.exists() && !commitToreset.getBlobs().containsKey(entry.getKey())) {
                 fileToremove.delete();
             }
         }
@@ -549,5 +523,7 @@ public class Repository {
         String currentBranch = readContentsAsString(HEAD);
         File branchFile = join(BRANCHES_DIR, currentBranch);
         Utils.writeContents(branchFile, commitId);
+        // 清空暂存区
+        clearDir(STAGED_FOR_ADDITION);
     }
 }
