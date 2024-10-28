@@ -98,7 +98,7 @@ public class Repository {
     }
 
     public static void add(String filename) {
-        File fileToadd = new File(filename);
+        File fileToadd = join(CWD, filename);
         if (!fileToadd.exists()) {
             System.out.println("File does not exist.");
             System.exit(0);
@@ -106,22 +106,27 @@ public class Repository {
         //根据文件内容生成fileHash
         String fileContents = Utils.readContentsAsString(fileToadd);
         String fileHash = Utils.sha1(fileContents);
-        //根据以文件内容生成的hash值判断blobs里有没有相同版本的文件
-        // ?????存疑：如果我用filename作为文件名，（不）相同文件会覆写
-        File blobFile = new File(BLOBS_DIR, fileHash);
         //添加到staging area的文件名就是传入的filename
 
         File fileInaddition = new File(STAGED_FOR_ADDITION, filename);
         File fileInremoval = new File(STAGED_FOR_REMOVAL, filename);
+        Commit headCommit = getHeadCommit();
+        // 检查文件是否已被跟踪且内容未更改
+        if (headCommit.getBlobs().containsKey(filename) &&headCommit.getBlobs().get(filename).equals(fileHash)) {
+            return;
+        }
+        // 若文件内容改变，将文件内容写入 BLOB 文件
+        File blobFile = join(BLOBS_DIR, fileHash);
         if (!blobFile.exists()) {
-            //如果blobs中没有相同版本的file，把它加到暂存区
-            //Utils.writeContents(blobFile, fileContents);
-            Utils.writeContents(fileInaddition, fileContents);
-        } else if (fileInremoval.exists()) {
-            //如果add的文件在STAGED_FOR_REMOVAL,则把这里面的文件删除
+            Utils.writeContents(blobFile, fileContents);
+        }
+        // 将文件内容写入 STAGED_FOR_ADDITION 中
+        Utils.writeContents(fileInaddition,fileContents);
+
+        //如果add的文件在STAGED_FOR_REMOVAL,则把这里面的文件删除
+        if (fileInremoval.exists()) {
             fileInremoval.delete();
         }
-
     }
 
     public static void commit(String message) {
