@@ -88,6 +88,10 @@ public class Main {
                 Repository.checkInitialized();
                 Repository.reset(args[1]);
                 break;
+            case "merge":
+                validateNumArgs(args,2);
+                Repository.checkInitialized();
+                Repository.merge(args[1]);
         }
     }
 

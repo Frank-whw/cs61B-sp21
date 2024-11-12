@@ -1,5 +1,7 @@
 package gitlet;
 
+import org.checkerframework.checker.units.qual.A;
+
 import java.io.File;
 import java.util.*;
 
@@ -208,19 +210,34 @@ public class Repository {
         }
     }
 
-    /**use to get the commit that the HEAD points to
-     * */
+    /**
+     *
+     * @param commitId
+     * @return 通过commitId，返回commit类型
+     */
+    private static Commit getCommit(String commitId) {
+        File commitFile = join(COMMITS_DIR, commitId);
+        return readObject(commitFile, Commit.class);
+    }
     private static Commit  getHeadCommit() {
         String headCommitId = getHeadCommitId();
         //System.out.println(headCommitId);
-        File commitFile = join(COMMITS_DIR, headCommitId);
-        return readObject(commitFile, Commit.class);
+        return getCommit(headCommitId);
+    }
+
+    /**
+     *
+     * @param branchName
+     * @return 通过分支名，返回commitId
+     */
+    private static String getCommitId(String branchName) {
+        File branch = join(BRANCHES_DIR, branchName); //根据分支名找到存储commit的文件
+        return readContentsAsString(branch);
     }
     private static String getHeadCommitId() {
         //String headCommitId = Utils.readContentsAsString(HEAD);这边可能readContentsAsString可能有问题
         String branchName = readContentsAsString(HEAD); //先提取HEAD指向的分支名
-        File branch = join(BRANCHES_DIR, branchName); //根据分支名找到存储commit的文件
-        return readContentsAsString(branch);
+        return getCommitId(branchName);
     }
 
     public static void rm(String filename) {
@@ -519,11 +536,143 @@ public class Repository {
                 fileToremove.delete();
             }
         }
+        updateHEAD(commitId);
+        // 清空暂存区
+        clearDir(STAGED_FOR_ADDITION);
+    }
+
+    private static void updateHEAD(String commitId) {
         // 更新当前分支的 HEAD 指向指定 commitId
         String currentBranch = readContentsAsString(HEAD);
         File branchFile = join(BRANCHES_DIR, currentBranch);
         Utils.writeContents(branchFile, commitId);
-        // 清空暂存区
-        clearDir(STAGED_FOR_ADDITION);
+    }
+
+    public static void merge(String givenBranch) {
+        failureCase(givenBranch);
+        Commit currentCommit = getHeadCommit();
+        Commit givenCommit = getCommit(getCommitId(givenBranch));
+        Commit splitCommit = getSplitCommit(currentCommit, givenCommit);
+        if (splitCommit.equals(givenCommit)) {
+            // If the split point is the same commit as the given branch, then we do nothing
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        }
+        else if (splitCommit.equals(currentCommit)) {
+            //If the split point is the current branch,
+            // then the effect is to check out the given branch,
+            //and the operation ends after printing the message Current branch fast-forwarded.
+            checkout(generateCommitID(givenCommit));
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+        }
+        String message = "Merged " + givenBranch + " into " + readContentsAsString(HEAD);
+        Commit newCommit = new Commit(message, generateCommitID(currentCommit), generateCommitID(givenCommit));
+        Map<String, String> splitMap = splitCommit.getBlobs();
+        Map<String, String> currentMap = currentCommit.getBlobs();
+        Map<String, String> givenMap = givenCommit.getBlobs();
+        List<String> allFile = getAllFileName(splitMap,currentMap,givenMap);
+        for (String file : allFile) {
+            if (!splitMap.containsKey(file) && !currentMap.containsKey(file)) {
+                //5.任何不在split commit和current branch中，而只在given branch中的文件 -> given branch
+                String fileHash = givenMap.get(file);
+                newCommit.getBlobs().put(file, fileHash);
+            } else if (!splitMap.containsKey(file) && !givenMap.containsKey(file)) {
+                //4.任何不在split commit和given branch中，而只在current branch中的文件 -> current branch
+                String fileHash = currentMap.get(file);
+                newCommit.getBlobs().put(file, fileHash);
+            } else if (splitMap.get(file).equals(currentMap.get(file)) &&
+                       !splitMap.get(file).equals(givenMap.get(file))) {
+                //1.任何在given branch中被修改，在current branch中没有被修改的文件 ->given branch
+                String fileHash = givenMap.get(file);
+                newCommit.getBlobs().put(file, fileHash);
+            } else if (!splitMap.get(file).equals(currentMap.get(file)) &&
+                    splitMap.get(file).equals(givenMap.get(file))) {
+                //2.任何在current branch中被修改，在given branch中没有被修改的文件 ->current branch
+                String fileHash = currentMap.get(file);
+                newCommit.getBlobs().put(file,fileHash);
+            } else if (!givenMap.containsKey(file) && !currentMap.containsKey(file) ||
+                    givenMap.get(file).equals(currentMap.get(file)) && !currentMap.get(file).equals(splitMap.get(file))) {
+                //3.如果一个文件在current branch和given branch中被修改的方式相同（都被删除或或者具有相同的内容），那么保持不变。
+                String fileHash = currentMap.get(file);
+                newCommit.getBlobs().put(file,fileHash);
+            } else if (!givenMap.containsKey(file) && splitMap.containsKey(file) && currentMap.containsKey(file)
+             && splitMap.get(file).equals(currentMap.get(file))) {
+            //6. 任何在spilit commit中且不在given branch中，在current branch 中没有被修改的文件 -> 删除
+                //删除我是不是能理解为不添加到newCommit里
+            } else if (givenMap.containsKey(file) && splitMap.containsKey(file) && !currentMap.containsKey(file)
+                    && splitMap.get(file).equals(givenMap.get(file))) {
+                //7.任何在spilit commit中且不在current branch中，在given branch 中没有被修改的文件 -> 删除
+
+            } else if (!currentMap.get(file).equals(givenMap.get(file))) {
+                File conflictFile = mergeConflict(file,currentMap.get(file), givenMap.get(file));
+                String fileHash = sha1(readContentsAsString(conflictFile));
+                newCommit.getBlobs().put(file,fileHash);
+            }
+        }
+
+        updateHEAD(generateCommitID(newCommit));
+    }
+
+    private static File mergeConflict(String fileName, String s1, String s2) {
+        File newFile = join(CWD, fileName);
+        String currentContents = (s1 == null) ? "" : readContentsAsString(join(BLOBS_DIR, s1));
+        String givenContents = (s2 == null) ? "" : readContentsAsString(join(BLOBS_DIR, s2));
+
+        String conflictContent = "<<<<<<< HEAD\n" + currentContents +
+                "\n=======\n" + givenContents +
+                "\n>>>>>>>\n";
+
+        writeContents(newFile, conflictContent); // 假设 `writeContents` 方法可以将内容写入文件
+        return newFile;
+
+
+    }
+
+    private static List<String> getAllFileName
+            (Map<String, String> map1, Map<String, String> map2, Map<String, String> map3) {
+        Set<String> lists = new HashSet<>();
+        lists.addAll(map1.keySet());
+        lists.addAll(map2.keySet());
+        lists.addAll(map3.keySet());
+        return new ArrayList<>(lists);
+    }
+
+    private static Commit getSplitCommit(Commit commit1, Commit commit2) {
+        Set<String> ancestor1 = new HashSet<>();
+        Set<String> ancestor2 = new HashSet<>();
+        while (commit1 != null) {
+            ancestor1.add(generateCommitID(commit1));
+            commit1 = getCommit(commit1.getParent());
+        }
+        while (commit2 != null) {
+            if (ancestor1.contains(generateCommitID(commit2))) {
+                return getCommit(generateCommitID(commit2));
+            } else {
+                commit2 = getCommit((commit2.getParent()));
+            }
+        }
+        return null;
+    }
+
+    private static void failureCase(String givenBranch) {
+        List<String> fileInAddition = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> fileInRemoval = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (!fileInAddition.isEmpty() && !fileInRemoval.isEmpty()) {
+            //暂存区有东西的话，报错并退出
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+        if (!join(BRANCHES_DIR, givenBranch).exists()) {
+            //given branch不存在，报错并退出
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        String currentBranch = readContentsAsString(HEAD);
+        if (givenBranch == currentBranch) {
+            //given branch == current branch，报错并退出
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
     }
 }
