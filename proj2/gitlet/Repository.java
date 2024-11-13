@@ -567,11 +567,12 @@ public class Repository {
             System.exit(0);
         }
         String message = "Merged " + givenBranch + " into " + readContentsAsString(HEAD);
-        Commit newCommit = new Commit(message, generateCommitID(currentCommit), generateCommitID(givenCommit));
+        Commit newCommit = new Commit(message, generateCommitID(currentCommit),
+                generateCommitID(givenCommit));
         Map<String, String> splitMap = splitCommit.getBlobs();
         Map<String, String> currentMap = currentCommit.getBlobs();
         Map<String, String> givenMap = givenCommit.getBlobs();
-        List<String> allFile = getAllFileName(splitMap,currentMap,givenMap);
+        List<String> allFile = getAllFileName(splitMap, currentMap, givenMap);
         for (String file : allFile) {
             if (!splitMap.containsKey(file) && !currentMap.containsKey(file)) {
                 //5.任何不在split commit和current branch中，而只在given branch中的文件 -> given branch
@@ -581,23 +582,25 @@ public class Repository {
                 //4.任何不在split commit和given branch中，而只在current branch中的文件 -> current branch
                 String fileHash = currentMap.get(file);
                 newCommit.getBlobs().put(file, fileHash);
-            } else if (splitMap.get(file).equals(currentMap.get(file)) &&
-                       !splitMap.get(file).equals(givenMap.get(file))) {
+            } else if (splitMap.get(file).equals(currentMap.get(file))
+                    && !splitMap.get(file).equals(givenMap.get(file))) {
                 //1.任何在given branch中被修改，在current branch中没有被修改的文件 ->given branch
                 String fileHash = givenMap.get(file);
                 newCommit.getBlobs().put(file, fileHash);
-            } else if (!splitMap.get(file).equals(currentMap.get(file)) &&
-                    splitMap.get(file).equals(givenMap.get(file))) {
+            } else if (!splitMap.get(file).equals(currentMap.get(file))
+                    && splitMap.get(file).equals(givenMap.get(file))) {
                 //2.任何在current branch中被修改，在given branch中没有被修改的文件 ->current branch
                 String fileHash = currentMap.get(file);
                 newCommit.getBlobs().put(file,fileHash);
-            } else if (!givenMap.containsKey(file) && !currentMap.containsKey(file) ||
-                    givenMap.get(file).equals(currentMap.get(file)) && !currentMap.get(file).equals(splitMap.get(file))) {
+            } else if (!givenMap.containsKey(file) && !currentMap.containsKey(file)
+                    || givenMap.get(file).equals(currentMap.get(file))
+                    && !currentMap.get(file).equals(splitMap.get(file))) {
                 //3.如果一个文件在current branch和given branch中被修改的方式相同（都被删除或或者具有相同的内容），那么保持不变。
                 String fileHash = currentMap.get(file);
-                newCommit.getBlobs().put(file,fileHash);
-            } else if (!givenMap.containsKey(file) && splitMap.containsKey(file) && currentMap.containsKey(file)
-             && splitMap.get(file).equals(currentMap.get(file))) {
+                newCommit.getBlobs().put(file, fileHash);
+            } else if (!givenMap.containsKey(file) && splitMap.containsKey(file)
+                    && currentMap.containsKey(file)
+                    && splitMap.get(file).equals(currentMap.get(file))) {
             //6. 任何在spilit commit中且不在given branch中，在current branch 中没有被修改的文件 -> 删除
                 //删除我是不是能理解为不添加到newCommit里
             } else if (givenMap.containsKey(file) && splitMap.containsKey(file) && !currentMap.containsKey(file)
@@ -619,9 +622,9 @@ public class Repository {
         String currentContents = (s1 == null) ? "" : readContentsAsString(join(BLOBS_DIR, s1));
         String givenContents = (s2 == null) ? "" : readContentsAsString(join(BLOBS_DIR, s2));
 
-        String conflictContent = "<<<<<<< HEAD\n" + currentContents +
-                "\n=======\n" + givenContents +
-                "\n>>>>>>>\n";
+        String conflictContent = "<<<<<<< HEAD\n" + currentContents
+                + "\n=======\n" + givenContents
+                + "\n>>>>>>>\n";
 
         writeContents(newFile, conflictContent); // 假设 `writeContents` 方法可以将内容写入文件
         return newFile;
@@ -629,8 +632,8 @@ public class Repository {
 
     }
 
-    private static List<String> getAllFileName
-            (Map<String, String> map1, Map<String, String> map2, Map<String, String> map3) {
+    private static List<String> getAllFileName(Map<String, String> map1, Map<String,
+            String> map2, Map<String, String> map3) {
         Set<String> lists = new HashSet<>();
         lists.addAll(map1.keySet());
         lists.addAll(map2.keySet());
