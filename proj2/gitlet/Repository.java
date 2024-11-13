@@ -216,7 +216,14 @@ public class Repository {
      * @return 通过commitId，返回commit类型
      */
     private static Commit getCommit(String commitId) {
+        //System.out.println(commitId);
+        if (commitId == null) {
+            return null;
+        }
         File commitFile = join(COMMITS_DIR, commitId);
+//        if (!commitFile.exists()) {
+//            System.out.println(commitId);
+//        }
         return readObject(commitFile, Commit.class);
     }
     private static Commit  getHeadCommit() {
@@ -557,8 +564,7 @@ public class Repository {
             // If the split point is the same commit as the given branch, then we do nothing
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
-        }
-        else if (splitCommit.equals(currentCommit)) {
+        } else if (splitCommit.equals(currentCommit)) {
             //If the split point is the current branch,
             // then the effect is to check out the given branch,
             //and the operation ends after printing the message Current branch fast-forwarded.
@@ -591,7 +597,7 @@ public class Repository {
                     && splitMap.get(file).equals(givenMap.get(file))) {
                 //2.任何在current branch中被修改，在given branch中没有被修改的文件 ->current branch
                 String fileHash = currentMap.get(file);
-                newCommit.getBlobs().put(file,fileHash);
+                newCommit.getBlobs().put(file, fileHash);
             } else if (!givenMap.containsKey(file) && !currentMap.containsKey(file)
                     || givenMap.get(file).equals(currentMap.get(file))
                     && !currentMap.get(file).equals(splitMap.get(file))) {
@@ -601,16 +607,19 @@ public class Repository {
             } else if (!givenMap.containsKey(file) && splitMap.containsKey(file)
                     && currentMap.containsKey(file)
                     && splitMap.get(file).equals(currentMap.get(file))) {
-            //6. 任何在spilit commit中且不在given branch中，在current branch 中没有被修改的文件 -> 删除
-                //删除我是不是能理解为不添加到newCommit里
-            } else if (givenMap.containsKey(file) && splitMap.containsKey(file) && !currentMap.containsKey(file)
+                //6.任何在spilit commit中且不在given branch中，在current branch 中没有被修改的文件 -> 删除
+                // 删除我是不是能理解为不添加到newCommit里
+                continue;
+            } else if (givenMap.containsKey(file) && splitMap.containsKey(file)
+                    && !currentMap.containsKey(file)
                     && splitMap.get(file).equals(givenMap.get(file))) {
                 //7.任何在spilit commit中且不在current branch中，在given branch 中没有被修改的文件 -> 删除
+                continue;
 
             } else if (!currentMap.get(file).equals(givenMap.get(file))) {
-                File conflictFile = mergeConflict(file,currentMap.get(file), givenMap.get(file));
+                File conflictFile = mergeConflict(file, currentMap.get(file), givenMap.get(file));
                 String fileHash = sha1(readContentsAsString(conflictFile));
-                newCommit.getBlobs().put(file,fileHash);
+                newCommit.getBlobs().put(file, fileHash);
             }
         }
 
@@ -643,16 +652,33 @@ public class Repository {
 
     private static Commit getSplitCommit(Commit commit1, Commit commit2) {
         Set<String> ancestor1 = new HashSet<>();
-        Set<String> ancestor2 = new HashSet<>();
-        while (commit1 != null) {
+        while (true) {
             ancestor1.add(generateCommitID(commit1));
             commit1 = getCommit(commit1.getParent());
+            if (commit1 == null) {
+               break;
+            }
         }
+        //System.out.println(ancestor1);
         while (commit2 != null) {
             if (ancestor1.contains(generateCommitID(commit2))) {
-                return getCommit(generateCommitID(commit2));
+                return commit2;
+            }
+            List<String> parents = commit2.getParents();
+            if (parents.size() == 1) {
+                commit2 = getCommit(parents.get(0));
+                if (commit2 == null) {
+                    break;
+                }
+            } else if (parents.size() > 1){
+                for (String parentId : parents) {
+                    Commit split = getSplitCommit(getCommit(parentId), commit2);
+                    if (split != null) {
+                        return split;
+                    }
+                }
             } else {
-                commit2 = getCommit((commit2.getParent()));
+                break;
             }
         }
         return null;
