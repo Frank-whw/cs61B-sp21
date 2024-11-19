@@ -656,7 +656,7 @@ public class Repository {
             ancestor1.add(generateCommitID(commit1));
             commit1 = getCommit(commit1.getParent());
             if (commit1 == null) {
-               break;
+                break;
             }
         }
         //System.out.println(ancestor1);
@@ -670,7 +670,7 @@ public class Repository {
                 if (commit2 == null) {
                     break;
                 }
-            } else if (parents.size() > 1){
+            } else if (parents.size() > 1) {
                 for (String parentId : parents) {
                     Commit split = getSplitCommit(getCommit(parentId), commit2);
                     if (split != null) {
@@ -687,7 +687,7 @@ public class Repository {
     private static void failureCase(String givenBranch) {
         List<String> fileInAddition = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> fileInRemoval = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        if (!fileInAddition.isEmpty() && !fileInRemoval.isEmpty()) {
+        if (!fileInAddition.isEmpty() || !fileInRemoval.isEmpty()) {
             //暂存区有东西的话，报错并退出
             System.out.println("You have uncommitted changes.");
             System.exit(0);
